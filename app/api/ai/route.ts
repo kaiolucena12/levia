@@ -8,11 +8,21 @@ Você é Lívia, a assistente virtual do Levia.
 
 Você conversa como uma companheira de rotina próxima, natural, acolhedora e prática.
 
-Além de conversar, você pode identificar quando o usuário está INFORMANDO algo que deseja registrar no Levia.
+Você ajuda o usuário a acompanhar:
+- alimentação;
+- hidratação;
+- peso;
+- atividade física;
+- evolução;
+- IMC;
+- metas semanais.
+
+Você pode identificar quando o usuário está INFORMANDO algo que deseja registrar no Levia.
 
 Você pode registrar:
 
 1. REFEIÇÃO
+
 Exemplos:
 - "almocei arroz, feijão e carne"
 - "no café comi dois ovos e pão"
@@ -20,31 +30,115 @@ Exemplos:
 - "comi uma banana no lanche"
 
 2. ÁGUA
+
 Exemplos:
 - "bebi 500 ml de água"
 - "tomei mais 300 ml"
 - "bebi uma garrafa de 500 ml"
 
 3. ATIVIDADE FÍSICA
+
 Exemplos:
 - "caminhei 30 minutos"
 - "fiz academia por 1 hora"
 - "corri 20 minutos"
 
 4. PESO
+
 Exemplos:
 - "hoje estou com 92,3 kg"
 - "me pesei e deu 91.8"
 
-IMPORTANTE:
+5. METAS SEMANAIS
 
-- Só registre quando o usuário estiver claramente contando algo que fez, comeu, bebeu ou mediu.
-- Se o usuário estiver apenas perguntando, NÃO registre nada.
-- Nunca invente dados.
-- Se a informação for ambígua, não registre e pergunte.
-- Não invente horário, quantidade ou tipo de refeição.
+Você pode criar ou alterar:
+- meta de dias de atenção à alimentação;
+- meta de dias de atividade física.
+
+Exemplos:
+- "quero treinar 3 vezes por semana"
+- "coloque atividade 2 vezes por semana"
+- "quero cuidar da alimentação 5 dias e treinar 3 dias"
+- "crie uma meta para mim esta semana"
+
+==================================================
+DADOS DO PERFIL
+==================================================
+
+Você poderá receber:
+
+- nome;
+- sexo;
+- altura em centímetros;
+- peso mais recente;
+- IMC;
+- registros dos últimos dias;
+- metas da semana.
+
+Use essas informações somente quando forem relevantes.
+
+Não fique repetindo sexo, altura, peso ou IMC em toda resposta.
+
+Nunca invente:
+- idade;
+- altura;
+- sexo;
+- peso;
+- IMC;
+- quantidade de água;
+- exercício;
+- refeição.
+
+Se algum dado necessário estiver ausente, diga que não há informação suficiente para uma estimativa adequada.
+
+==================================================
+IMC
+==================================================
+
+O IMC será calculado pelo sistema usando:
+
+peso / altura²
+
+Você poderá receber o IMC já calculado.
+
+Trate o IMC apenas como um indicador de referência e acompanhamento.
+
+Não use o IMC isoladamente para diagnosticar saúde, doença ou composição corporal.
+
+Quando comentar sobre IMC, explique de forma simples e sem julgamento.
+
+==================================================
+REGRAS DE REGISTRO
+==================================================
+
+Só registre quando o usuário estiver claramente contando algo que:
+
+- comeu;
+- bebeu;
+- fez;
+- mediu;
+- ou quando solicitar claramente uma meta.
+
+Se o usuário estiver apenas perguntando, NÃO registre nada.
+
+Nunca invente dados.
+
+Se a informação for ambígua:
+- não registre;
+- faça uma pergunta curta para esclarecer.
+
+Não invente:
+- horário;
+- quantidade;
+- tipo de refeição;
+- duração de atividade.
+
+==================================================
+REFEIÇÕES
+==================================================
 
 Para refeição, escolha somente:
+
 - "Café da manhã"
 - "Lanche"
 - "Almoço"
@@ -53,37 +147,36 @@ Para refeição, escolha somente:
 - "Ceia"
 
 Exemplo:
-Usuário: "comi arroz e frango"
+
+Usuário:
+"comi arroz e frango"
 
 Se não der para saber qual refeição foi, NÃO registre.
 
 Pergunte:
+
 "Foi no almoço, jantar ou outra refeição?"
-
-Usuário:
-"almocei arroz, feijão e carne"
-
-Nesse caso registre como Almoço.
-
-REFEIÇÕES:
-
-Quando registrar uma refeição, NÃO responda apenas "registrei".
-
-Você deve:
-- confirmar que registrou;
-- comentar o que foi positivo;
-- dizer o que pode melhorar;
-- dar uma sugestão simples.
 
 Exemplo:
 
 Usuário:
-"Almocei arroz e feijão."
+"almocei arroz, feijão e carne"
 
-Resposta esperada:
+Nesse caso registre como "Almoço".
+
+Quando registrar uma refeição, NÃO responda apenas "registrei".
+
+Você deve:
+
+- confirmar o registro;
+- comentar brevemente pontos positivos;
+- indicar uma possibilidade simples de complementar;
+- evitar julgamento.
+
+Exemplo:
 
 {
-  "reply": "Registrei seu almoço. Arroz e feijão formam uma combinação interessante porque oferecem carboidratos, fibras e proteínas vegetais. Para deixar a refeição mais completa, você pode incluir uma fonte de proteína e algum vegetal ou salada.",
+  "reply": "Registrei seu almoço. Arroz e feijão oferecem carboidratos, fibras e proteínas vegetais. Se fizer sentido para você, pode complementar com uma fonte de proteína e vegetais.",
   "actions": [
     {
       "type": "add_meal",
@@ -93,24 +186,36 @@ Resposta esperada:
   ]
 }
 
-Não critique a refeição.
-Não diga que foi ruim.
-Evite julgamento.
+Não diga que a refeição foi "ruim".
 
-ÁGUA:
+Não use alimentos como:
+- proibidos;
+- lixo;
+- pecado;
+- refeição livre.
 
-- Sempre converta para mililitros.
+==================================================
+ÁGUA
+==================================================
+
+Sempre converta para mililitros.
+
+Exemplos:
+
 - "500 ml" = 500
 - "1 litro" = 1000
 - "1,5 litro" = 1500
-- Não estime copos ou garrafas se o usuário não informar o tamanho.
 
-Quando registrar água, além de confirmar, comente brevemente sobre hidratação.
+Não estime copos ou garrafas se o tamanho não tiver sido informado.
+
+Quando registrar água:
+- confirme;
+- faça um comentário breve sobre hidratação.
 
 Exemplo:
 
 {
-  "reply": "Pronto! Somei 500 ml à sua água de hoje. Boa hidratação ao longo do dia ajuda no funcionamento do organismo e também pode contribuir para uma melhor percepção de fome e saciedade.",
+  "reply": "Pronto! Somei 500 ml à sua hidratação de hoje. Manter a ingestão distribuída ao longo do dia costuma ser mais confortável do que beber grandes volumes de uma vez.",
   "actions": [
     {
       "type": "add_water",
@@ -119,78 +224,70 @@ Exemplo:
   ]
 }
 
-ATIVIDADE:
+==================================================
+ATIVIDADE FÍSICA
+==================================================
 
-- Registre o nome da atividade.
-- Registre duração somente se informada.
-- Não invente calorias gastas.
+Registre:
 
-Quando registrar atividade física:
+- nome da atividade;
+- duração, somente quando informada.
+
+Não invente calorias gastas.
+
+Ao registrar atividade:
+
 - reconheça o esforço;
-- explique um benefício;
-- quando houver dados suficientes, você pode fornecer uma estimativa aproximada de gasto energético.
+- explique brevemente algum benefício;
+- se houver informações suficientes, pode comentar gasto energético de forma aproximada.
 
-IMPORTANTE SOBRE CALORIAS:
+Nunca apresente gasto calórico como número garantido.
 
-Nunca dê um número exato de calorias como se fosse garantido.
+Use expressões como:
 
-Para estimar gasto energético, considere quando possível:
-- peso recente do usuário;
+- "aproximadamente";
+- "estimativa";
+- "pode variar".
+
+Considere quando disponível:
+
+- peso recente;
 - duração;
 - intensidade.
 
-Se a intensidade não estiver informada, use uma intensidade provável apenas quando fizer sentido, mas deixe claro que é uma estimativa.
-
-Use sempre palavras como:
-- "aproximadamente"
-- "estimativa"
-- "pode variar"
-
-Exemplo sem dados suficientes:
-
-Usuário:
-"Fiz 30 minutos de caminhada."
-
-Resposta:
-
-{
-  "reply": "Boa! Registrei seus 30 minutos de caminhada. Caminhar ajuda no condicionamento cardiovascular, circulação e gasto energético. A quantidade de calorias pode variar bastante conforme seu peso, ritmo e terreno.",
-  "actions": [
-    {
-      "type": "add_activity",
-      "name": "Caminhada",
-      "duration_minutes": 30
-    }
-  ]
-}
-
-Exemplo com peso recente disponível:
-
-{
-  "reply": "Boa! Registrei seus 30 minutos de caminhada. Considerando seu peso mais recente e uma caminhada em ritmo moderado, o gasto pode ficar aproximadamente em uma faixa estimada. Esse valor varia conforme ritmo, terreno e intensidade.",
-  "actions": [
-    {
-      "type": "add_activity",
-      "name": "Caminhada",
-      "duration_minutes": 30
-    }
-  ]
-}
-
-PESO:
-
-- Registre em kg.
-- Aceite vírgula ou ponto decimal.
-
-Quando registrar peso:
-- confirme;
-- não comemore nem critique uma única medição;
-- explique que o mais importante é observar tendência ao longo do tempo.
+Se não houver informações suficientes, não invente.
 
 Exemplo:
 
 {
-  "reply": "Registrei seu peso de hoje: 92,3 kg. Mais importante do que uma medida isolada é acompanhar a tendência ao longo dos próximos dias e semanas, porque o peso pode variar por hidratação, alimentação e outros fatores.",
+  "reply": "Boa! Registrei seus 30 minutos de caminhada. Caminhar contribui para o condicionamento cardiovascular e aumenta o gasto energético. O gasto exato pode variar conforme ritmo, terreno e intensidade.",
+  "actions": [
+    {
+      "type": "add_activity",
+      "name": "Caminhada",
+      "duration_minutes": 30
+    }
+  ]
+}
+
+==================================================
+PESO
+==================================================
+
+Registre em kg.
+
+Aceite vírgula ou ponto decimal.
+
+Quando registrar peso:
+
+- confirme;
+- não comemore nem critique uma única medição;
+- explique que a tendência ao longo do tempo é mais relevante.
+
+Exemplo:
+
+{
+  "reply": "Registrei seu peso de hoje: 92,3 kg. Uma medida isolada pode variar por hidratação, alimentação e outros fatores, então vale observar principalmente a tendência ao longo das semanas.",
   "actions": [
     {
       "type": "add_weight",
@@ -198,6 +295,86 @@ Exemplo:
     }
   ]
 }
+
+==================================================
+METAS SEMANAIS
+==================================================
+
+Você pode criar ou alterar metas semanais.
+
+As metas permitidas são:
+
+1. dias de atenção à alimentação;
+2. dias de atividade física.
+
+Os valores devem ficar entre 1 e 7.
+
+As metas devem ser:
+
+- realistas;
+- progressivas;
+- sustentáveis;
+- compatíveis com a rotina registrada.
+
+Não transforme metas em punição.
+
+Não proponha aumentos exagerados.
+
+Exemplo:
+
+Se o usuário fez atividade física em 2 dias recentemente, uma meta inicial de 2 ou 3 dias pode fazer sentido.
+
+Evite saltos como:
+
+1 dia -> 6 dias.
+
+Para alimentação, use linguagem como:
+
+- "organizar a alimentação";
+- "manter atenção à rotina alimentar";
+- "registrar as refeições";
+- "buscar refeições mais equilibradas".
+
+Evite falar em "dieta restritiva".
+
+Exemplo:
+
+{
+  "reply": "Pelo seu ritmo recente, podemos começar com uma meta sustentável: atenção à alimentação em 5 dias da semana e atividade física em 3 dias. A ideia é buscar consistência, não perfeição.",
+  "actions": [
+    {
+      "type": "set_weekly_goals",
+      "nutrition_days_target": 5,
+      "activity_days_target": 3,
+      "notes": "Priorizar consistência e evolução gradual."
+    }
+  ]
+}
+
+Se o usuário informar claramente os números desejados, respeite a escolha desde que estejam entre 1 e 7.
+
+Exemplo:
+
+Usuário:
+"Coloca alimentação 5 dias e academia 2 vezes."
+
+Resposta:
+
+{
+  "reply": "Pronto! Sua meta desta semana ficou em 5 dias de atenção à alimentação e 2 dias de atividade física.",
+  "actions": [
+    {
+      "type": "set_weekly_goals",
+      "nutrition_days_target": 5,
+      "activity_days_target": 2,
+      "notes": "Meta definida pelo usuário."
+    }
+  ]
+}
+
+==================================================
+VÁRIAS AÇÕES
+==================================================
 
 É permitido retornar várias ações quando o usuário informar várias coisas na mesma mensagem.
 
@@ -209,7 +386,7 @@ Usuário:
 Resposta:
 
 {
-  "reply": "Pronto! Registrei seu almoço e também somei 500 ml à sua hidratação de hoje. Arroz e feijão são uma combinação interessante, e você pode completar a refeição com uma fonte de proteína e vegetais.",
+  "reply": "Pronto! Registrei seu almoço e também somei 500 ml à sua hidratação de hoje. Arroz e feijão formam uma boa base para a refeição, e você pode complementar com proteína e vegetais.",
   "actions": [
     {
       "type": "add_meal",
@@ -223,39 +400,72 @@ Resposta:
   ]
 }
 
+==================================================
+CONVERSA NORMAL
+==================================================
+
 Quando for apenas conversa:
 
 {
-  "reply": "Claro! Posso analisar sua alimentação dos últimos dias.",
+  "reply": "Claro! Posso analisar sua rotina recente e ajudar você a identificar pontos para melhorar.",
   "actions": []
 }
 
-Seu estilo:
-- responda sempre em português do Brasil;
-- fale de forma natural e humana;
-- use primeira pessoa como Lívia quando fizer sentido;
-- seja acolhedora, prática e objetiva;
-- não pareça um relatório;
-- não rotule alimentos como proibidos, lixo, bons ou ruins;
-- não incentive restrição alimentar extrema;
-- não dê diagnóstico médico;
-- não prescreva medicamentos;
-- não prescreva suplementos;
-- não prescreva dietas terapêuticas;
-- não invente calorias ou macronutrientes.
+==================================================
+ESTILO
+==================================================
+
+Responda sempre em português do Brasil.
+
+Fale de forma:
+
+- natural;
+- humana;
+- próxima;
+- acolhedora;
+- prática;
+- objetiva.
+
+Use primeira pessoa como Lívia quando fizer sentido.
+
+Não pareça um relatório.
+
+Não incentive restrição alimentar extrema.
+
+Não dê diagnóstico médico.
+
+Não prescreva medicamentos.
+
+Não prescreva suplementos.
+
+Não prescreva dietas terapêuticas.
+
+Não invente calorias ou macronutrientes.
 
 Quando analisar alimentação, considere:
+
 - variedade;
 - proteína;
 - fibras;
 - frutas;
 - vegetais;
 - hidratação;
-- saciedade.
+- saciedade;
+- regularidade.
 
-Quando houver risco médico, transtorno alimentar, desmaios, dor intensa ou outra situação relevante, recomende avaliação profissional.
+Quando houver situação como:
 
-FORMATO OBRIGATÓRIO:
+- desmaio;
+- dor intensa;
+- sinais de transtorno alimentar;
+- sofrimento importante;
+- sintomas médicos relevantes;
+
+recomende avaliação profissional.
+
+==================================================
+FORMATO OBRIGATÓRIO
+==================================================
 
 Você deve responder SOMENTE com um JSON válido.
 
@@ -267,7 +477,9 @@ Formato:
 }
 
 Nunca coloque markdown.
+
 Nunca coloque blocos de código.
+
 Nunca escreva nada fora do JSON.
 `;
 
@@ -289,6 +501,12 @@ type LiviaAction =
   | {
       type: "add_weight";
       weight: number;
+    }
+  | {
+      type: "set_weekly_goals";
+      nutrition_days_target: number;
+      activity_days_target: number;
+      notes?: string | null;
     };
 
 type LiviaResponse = {
@@ -331,36 +549,95 @@ function getSupabase() {
 }
 
 function getTodayBrazil() {
-  const parts =
+  const formatter =
     new Intl.DateTimeFormat(
       "en-CA",
       {
-        timeZone:
-          "America/Recife",
+        timeZone: "America/Recife",
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
       }
-    ).formatToParts(
-      new Date()
     );
 
-  const year =
-    parts.find(
-      (p) => p.type === "year"
-    )?.value;
+  return formatter.format(
+    new Date()
+  );
+}
 
-  const month =
-    parts.find(
-      (p) => p.type === "month"
-    )?.value;
+function getWeekStartBrazil() {
+  const today =
+    getTodayBrazil();
 
-  const day =
-    parts.find(
-      (p) => p.type === "day"
-    )?.value;
+  const [
+    year,
+    month,
+    day,
+  ] =
+    today
+      .split("-")
+      .map(Number);
 
-  return `${year}-${month}-${day}`;
+  const date =
+    new Date(
+      year,
+      month - 1,
+      day,
+      12,
+      0,
+      0
+    );
+
+  const weekday =
+    date.getDay();
+
+  const difference =
+    weekday === 0
+      ? -6
+      : 1 - weekday;
+
+  date.setDate(
+    date.getDate() +
+      difference
+  );
+
+  const newYear =
+    date.getFullYear();
+
+  const newMonth =
+    String(
+      date.getMonth() + 1
+    ).padStart(2, "0");
+
+  const newDay =
+    String(
+      date.getDate()
+    ).padStart(2, "0");
+
+  return `${newYear}-${newMonth}-${newDay}`;
+}
+
+function calculateBMI(
+  weight: number | null,
+  heightCm: number | null
+) {
+  if (
+    !weight ||
+    !heightCm ||
+    heightCm <= 0
+  ) {
+    return null;
+  }
+
+  const heightM =
+    heightCm / 100;
+
+  return Number(
+    (
+      weight /
+      (heightM * heightM)
+    ).toFixed(1)
+  );
 }
 
 function cleanJsonResponse(
@@ -411,6 +688,10 @@ export async function POST(
   request: NextRequest
 ) {
   try {
+    /*
+     * OPENROUTER
+     */
+
     const openRouterKey =
       process.env.OPENROUTER_API_KEY;
 
@@ -420,9 +701,15 @@ export async function POST(
           error:
             "OPENROUTER_API_KEY não está configurada.",
         },
-        { status: 500 }
+        {
+          status: 500,
+        }
       );
     }
+
+    /*
+     * AUTENTICAÇÃO
+     */
 
     const authHeader =
       request.headers.get(
@@ -441,7 +728,9 @@ export async function POST(
           error:
             "Não autenticado.",
         },
-        { status: 401 }
+        {
+          status: 401,
+        }
       );
     }
 
@@ -465,12 +754,18 @@ export async function POST(
           error:
             "Sessão inválida. Entre novamente.",
         },
-        { status: 401 }
+        {
+          status: 401,
+        }
       );
     }
 
     const userId =
       authData.user.id;
+
+    /*
+     * MENSAGEM
+     */
 
     const body =
       await request.json();
@@ -486,9 +781,15 @@ export async function POST(
           error:
             "Mensagem vazia.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
+
+    /*
+     * SUPABASE COM TOKEN DO USUÁRIO
+     */
 
     const userSupabase =
       createClient(
@@ -509,25 +810,82 @@ export async function POST(
     const today =
       getTodayBrazil();
 
-    const sevenDaysAgo =
-      new Date();
+    const weekStart =
+      getWeekStartBrazil();
 
-    sevenDaysAgo.setDate(
-      sevenDaysAgo.getDate() - 7
-    );
-
-    const since =
-      sevenDaysAgo
-        .toISOString()
-        .slice(0, 10);
+    /*
+     * ÚLTIMOS 7 DIAS
+     */
 
     const [
+      todayYear,
+      todayMonth,
+      todayDay,
+    ] =
+      today
+        .split("-")
+        .map(Number);
+
+    const sevenDaysAgo =
+      new Date(
+        todayYear,
+        todayMonth - 1,
+        todayDay,
+        12
+      );
+
+    sevenDaysAgo.setDate(
+      sevenDaysAgo.getDate() -
+        7
+    );
+
+    const sinceYear =
+      sevenDaysAgo.getFullYear();
+
+    const sinceMonth =
+      String(
+        sevenDaysAgo.getMonth() +
+          1
+      ).padStart(
+        2,
+        "0"
+      );
+
+    const sinceDay =
+      String(
+        sevenDaysAgo.getDate()
+      ).padStart(
+        2,
+        "0"
+      );
+
+    const since =
+      `${sinceYear}-${sinceMonth}-${sinceDay}`;
+
+    /*
+     * BUSCAR DADOS
+     */
+
+    const [
+      profileRes,
       mealsRes,
       activitiesRes,
       logsRes,
       weightsRes,
+      goalsRes,
     ] =
       await Promise.all([
+        userSupabase
+          .from("profiles")
+          .select(
+            "name,sex,height_cm"
+          )
+          .eq(
+            "id",
+            userId
+          )
+          .maybeSingle(),
+
         userSupabase
           .from("meals")
           .select(
@@ -540,14 +898,15 @@ export async function POST(
           .order(
             "meal_date",
             {
-              ascending:
-                false,
+              ascending: false,
             }
           )
-          .limit(40),
+          .limit(20),
 
         userSupabase
-          .from("activities")
+          .from(
+            "activities"
+          )
           .select(
             "name,duration_minutes,activity_date"
           )
@@ -558,14 +917,15 @@ export async function POST(
           .order(
             "activity_date",
             {
-              ascending:
-                false,
+              ascending: false,
             }
           )
-          .limit(30),
+          .limit(15),
 
         userSupabase
-          .from("daily_logs")
+          .from(
+            "daily_logs"
+          )
           .select(
             "log_date,water_ml,notes"
           )
@@ -576,11 +936,10 @@ export async function POST(
           .order(
             "log_date",
             {
-              ascending:
-                false,
+              ascending: false,
             }
           )
-          .limit(10),
+          .limit(8),
 
         userSupabase
           .from(
@@ -592,39 +951,158 @@ export async function POST(
           .order(
             "recorded_at",
             {
-              ascending:
-                false,
+              ascending: false,
             }
           )
-          .limit(10),
+          .limit(5),
+
+        userSupabase
+          .from(
+            "weekly_goals"
+          )
+          .select(
+            "nutrition_days_target,activity_days_target,notes,week_start"
+          )
+          .eq(
+            "week_start",
+            weekStart
+          )
+          .maybeSingle(),
       ]);
+
+    /*
+     * PERFIL
+     */
+
+    const heightCm =
+      profileRes.data
+        ?.height_cm
+        ? Number(
+            profileRes.data
+              .height_cm
+          )
+        : null;
+
+    const latestWeight =
+      weightsRes.data?.[0]
+        ?.weight
+        ? Number(
+            weightsRes.data[0]
+              .weight
+          )
+        : null;
+
+    const bmi =
+      calculateBMI(
+        latestWeight,
+        heightCm
+      );
+
+    /*
+     * CONTAGEM DE DIAS
+     */
+
+    const nutritionDays =
+      new Set(
+        (mealsRes.data || [])
+          .filter(
+            (meal) =>
+              meal.meal_date >=
+              weekStart
+          )
+          .map(
+            (meal) =>
+              meal.meal_date
+          )
+      ).size;
+
+    const activityDays =
+      new Set(
+        (
+          activitiesRes.data ||
+          []
+        )
+          .filter(
+            (activity) =>
+              activity.activity_date >=
+              weekStart
+          )
+          .map(
+            (activity) =>
+              activity.activity_date
+          )
+      ).size;
+
+    /*
+     * CONTEXTO
+     */
 
     const context = {
       today,
 
+      weekStart,
+
+      profile: {
+        name:
+          profileRes.data
+            ?.name ||
+          null,
+
+        sex:
+          profileRes.data
+            ?.sex ||
+          null,
+
+        height_cm:
+          heightCm,
+      },
+
+      latestWeight,
+
+      bmi,
+
+      currentWeek: {
+        nutrition_days_registered:
+          nutritionDays,
+
+        activity_days_registered:
+          activityDays,
+
+        goals:
+          goalsRes.data ||
+          null,
+      },
+
       meals:
-        mealsRes.data || [],
+        mealsRes.data ||
+        [],
 
       activities:
-        activitiesRes.data || [],
+        activitiesRes.data ||
+        [],
 
       dailyLogs:
-        logsRes.data || [],
+        logsRes.data ||
+        [],
 
       weights:
-        weightsRes.data || [],
+        weightsRes.data ||
+        [],
     };
 
-    const latestWeight =
-      context.weights?.[0]
-        ?.weight || null;
+    /*
+     * HISTÓRICO DO CHAT
+     *
+     * Mantemos apenas as últimas 4 mensagens
+     * para deixar a resposta mais rápida.
+     */
 
     const history =
       Array.isArray(
         body.history
       )
         ? body.history
-            .slice(-8)
+            .slice(-4)
             .map(
               (item: any) => ({
                 role:
@@ -642,6 +1120,10 @@ export async function POST(
             )
         : [];
 
+    /*
+     * PROMPT
+     */
+
     const messages = [
       {
         role: "system",
@@ -655,28 +1137,90 @@ export async function POST(
 DATA DE HOJE:
 ${today}
 
+INÍCIO DA SEMANA ATUAL:
+${weekStart}
+
+PERFIL DO USUÁRIO:
+
+Nome:
+${
+  context.profile.name ||
+  "Não informado"
+}
+
+Sexo:
+${
+  context.profile.sex ===
+  "male"
+    ? "Masculino"
+    : context.profile.sex ===
+      "female"
+      ? "Feminino"
+      : "Não informado"
+}
+
+Altura:
+${
+  context.profile
+    .height_cm
+    ? `${context.profile.height_cm} cm`
+    : "Não informada"
+}
+
 PESO MAIS RECENTE:
 ${
-  latestWeight
+  latestWeight !==
+  null
     ? `${latestWeight} kg`
     : "Não disponível"
 }
 
-REGISTROS RECENTES DO USUÁRIO:
+IMC CALCULADO:
+${
+  bmi !== null
+    ? bmi
+    : "Não disponível"
+}
 
-Os registros podem estar incompletos.
+PROGRESSO DESTA SEMANA:
 
-Nunca invente dados.
+Dias com alimentação registrada:
+${nutritionDays}
 
-Se houver peso recente disponível, ele pode ser usado apenas para estimativas aproximadas de gasto energético.
+Dias com atividade física registrada:
+${activityDays}
 
-Nunca apresente gasto calórico como valor exato.
+META ATUAL:
+
+${
+  context.currentWeek
+    .goals
+    ? JSON.stringify(
+        context.currentWeek
+          .goals
+      )
+    : "Nenhuma meta semanal registrada."
+}
+
+REGISTROS RECENTES:
 
 ${JSON.stringify(
   context,
   null,
   2
 )}
+
+REGRAS IMPORTANTES:
+
+Os registros podem estar incompletos.
+
+Nunca invente informações que não aparecem nos dados.
+
+O IMC é apenas um indicador de referência.
+
+Ao sugerir metas, considere a rotina recente do usuário e prefira mudanças graduais.
+
+Nunca apresente gasto calórico como valor exato.
         `,
       },
 
@@ -688,11 +1232,16 @@ ${JSON.stringify(
       },
     ];
 
+    /*
+     * OPENROUTER
+     */
+
     const aiResponse =
       await fetch(
         "https://openrouter.ai/api/v1/chat/completions",
         {
-          method: "POST",
+          method:
+            "POST",
 
           headers: {
             Authorization:
@@ -718,10 +1267,10 @@ ${JSON.stringify(
               messages,
 
               temperature:
-                0.35,
+                0.3,
 
               max_tokens:
-                1000,
+                550,
             }),
         }
       );
@@ -729,7 +1278,9 @@ ${JSON.stringify(
     const result =
       await aiResponse.json();
 
-    if (!aiResponse.ok) {
+    if (
+      !aiResponse.ok
+    ) {
       console.error(
         "Erro OpenRouter:",
         result
@@ -763,9 +1314,15 @@ ${JSON.stringify(
           error:
             "A IA respondeu sem conteúdo.",
         },
-        { status: 500 }
+        {
+          status: 500,
+        }
       );
     }
+
+    /*
+     * INTERPRETAR JSON DA IA
+     */
 
     let liviaData:
       LiviaResponse;
@@ -777,18 +1334,23 @@ ${JSON.stringify(
         );
 
       liviaData =
-        JSON.parse(clean);
+        JSON.parse(
+          clean
+        );
     } catch {
       console.error(
         "Erro ao interpretar JSON da Lívia:",
         rawAnswer
       );
 
-      return NextResponse.json({
-        answer:
-          rawAnswer,
-        actions: [],
-      });
+      return NextResponse.json(
+        {
+          answer:
+            rawAnswer,
+
+          actions: [],
+        }
+      );
     }
 
     if (
@@ -801,7 +1363,9 @@ ${JSON.stringify(
           error:
             "Resposta da Lívia em formato inválido.",
         },
-        { status: 500 }
+        {
+          status: 500,
+        }
       );
     }
 
@@ -815,9 +1379,17 @@ ${JSON.stringify(
     const executedActions:
       string[] = [];
 
+    /*
+     * EXECUTAR AÇÕES
+     */
+
     for (
       const action of actions
     ) {
+      /*
+       * REFEIÇÃO
+       */
+
       if (
         action.type ===
         "add_meal"
@@ -853,7 +1425,9 @@ ${JSON.stringify(
             mealError,
         } =
           await userSupabase
-            .from("meals")
+            .from(
+              "meals"
+            )
             .insert({
               user_id:
                 userId,
@@ -881,6 +1455,10 @@ ${JSON.stringify(
         }
       }
 
+      /*
+       * ÁGUA
+       */
+
       if (
         action.type ===
         "add_water"
@@ -905,6 +1483,8 @@ ${JSON.stringify(
         const {
           data:
             currentDaily,
+          error:
+            dailyError,
         } =
           await userSupabase
             .from(
@@ -914,15 +1494,29 @@ ${JSON.stringify(
               "water_ml"
             )
             .eq(
+              "user_id",
+              userId
+            )
+            .eq(
               "log_date",
               today
             )
             .maybeSingle();
 
+        if (
+          dailyError
+        ) {
+          console.error(
+            "Erro ao consultar água:",
+            dailyError
+          );
+        }
+
         const currentWater =
           Number(
             currentDaily
-              ?.water_ml || 0
+              ?.water_ml ||
+              0
           );
 
         const newWater =
@@ -949,7 +1543,8 @@ ${JSON.stringify(
                   newWater,
 
                 updated_at:
-                  new Date().toISOString(),
+                  new Date()
+                    .toISOString(),
               },
               {
                 onConflict:
@@ -970,6 +1565,10 @@ ${JSON.stringify(
           );
         }
       }
+
+      /*
+       * ATIVIDADE FÍSICA
+       */
 
       if (
         action.type ===
@@ -1005,7 +1604,8 @@ ${JSON.stringify(
         }
 
         if (
-          duration !== null &&
+          duration !==
+            null &&
           (
             !Number.isFinite(
               duration
@@ -1052,6 +1652,10 @@ ${JSON.stringify(
           );
         }
       }
+
+      /*
+       * PESO
+       */
 
       if (
         action.type ===
@@ -1103,30 +1707,148 @@ ${JSON.stringify(
           );
         }
       }
+
+      /*
+       * METAS SEMANAIS
+       */
+
+      if (
+        action.type ===
+        "set_weekly_goals"
+      ) {
+        const nutritionTarget =
+          Math.round(
+            Number(
+              action.nutrition_days_target
+            )
+          );
+
+        const activityTarget =
+          Math.round(
+            Number(
+              action.activity_days_target
+            )
+          );
+
+        if (
+          !Number.isFinite(
+            nutritionTarget
+          ) ||
+          nutritionTarget <
+            1 ||
+          nutritionTarget >
+            7
+        ) {
+          continue;
+        }
+
+        if (
+          !Number.isFinite(
+            activityTarget
+          ) ||
+          activityTarget <
+            1 ||
+          activityTarget >
+            7
+        ) {
+          continue;
+        }
+
+        const notes =
+          action.notes
+            ? String(
+                action.notes
+              )
+                .trim()
+                .slice(
+                  0,
+                  500
+                )
+            : null;
+
+        const {
+          error:
+            goalError,
+        } =
+          await userSupabase
+            .from(
+              "weekly_goals"
+            )
+            .upsert(
+              {
+                user_id:
+                  userId,
+
+                week_start:
+                  weekStart,
+
+                nutrition_days_target:
+                  nutritionTarget,
+
+                activity_days_target:
+                  activityTarget,
+
+                notes,
+
+                updated_at:
+                  new Date()
+                    .toISOString(),
+              },
+              {
+                onConflict:
+                  "user_id,week_start",
+              }
+            );
+
+        if (
+          goalError
+        ) {
+          console.error(
+            "Erro ao registrar metas:",
+            goalError
+          );
+        } else {
+          executedActions.push(
+            "weekly_goals"
+          );
+        }
+      }
     }
 
-    return NextResponse.json({
-      answer:
-        liviaData.reply,
+    /*
+     * RESPOSTA
+     */
 
-      actions:
-        executedActions,
-    });
+    return NextResponse.json(
+      {
+        answer:
+          liviaData.reply,
+
+        actions:
+          executedActions,
+      }
+    );
   } catch (
-    error: any
+    error: unknown
   ) {
     console.error(
       "ERRO LÍVIA:",
       error
     );
 
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Erro interno ao consultar a IA.";
+
     return NextResponse.json(
       {
         error:
-          error?.message ||
-          "Erro interno ao consultar a IA.",
+          message,
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

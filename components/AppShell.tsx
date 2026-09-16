@@ -10,14 +10,36 @@ import {
   TrendingDown,
   Sparkles,
   LogOut,
+  UserRound,
   HeartPulse,
 } from "lucide-react";
 
 const links = [
-  { href: "/", label: "Início", icon: Home },
-  { href: "/diario", label: "Diário", icon: Utensils },
-  { href: "/evolucao", label: "Evolução", icon: TrendingDown },
-  { href: "/ia", label: "Lívia", icon: Sparkles },
+  {
+    href: "/",
+    label: "Início",
+    icon: Home,
+  },
+  {
+    href: "/diario",
+    label: "Diário",
+    icon: Utensils,
+  },
+  {
+    href: "/evolucao",
+    label: "Evolução",
+    icon: TrendingDown,
+  },
+  {
+    href: "/ia",
+    label: "Lívia",
+    icon: Sparkles,
+  },
+  {
+    href: "/perfil",
+    label: "Perfil",
+    icon: UserRound,
+  },
 ];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
