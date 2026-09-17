@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 
@@ -659,7 +659,7 @@ function foodScore(
 }
 
 async function findFood(
-  db: ReturnType<typeof createClient>,
+  db: SupabaseClient<any>,
   foodName: string
 ): Promise<FoodRecord | null> {
   let normalized =
@@ -1098,7 +1098,7 @@ function commonUnitWeight(
 ========================================================= */
 
 async function resolvePortion(
-  db: ReturnType<typeof createClient>,
+  db: SupabaseClient<any>,
   food: FoodRecord,
   item: FoodItem
 ): Promise<ResolvedPortion | null> {
@@ -1339,7 +1339,7 @@ async function resolvePortion(
 ========================================================= */
 
 async function estimateMealNutrition(
-  db: ReturnType<typeof createClient>,
+  db: SupabaseClient<any>,
   foodItems: FoodItem[]
 ) {
   let kcalMin =
@@ -1710,7 +1710,7 @@ async function estimateMealNutrition(
 ========================================================= */
 
 async function findLastMealWithoutEstimate(
-  db: ReturnType<typeof createClient>,
+  db: SupabaseClient<any>,
   userId: string,
   today: string
 ) {
@@ -1887,7 +1887,7 @@ function mergeFoodItemsWithDescription(
 ========================================================= */
 
 async function getDailyCalories(
-  db: ReturnType<typeof createClient>,
+  db: SupabaseClient<any>,
   userId: string,
   today: string
 ) {
