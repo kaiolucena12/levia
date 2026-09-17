@@ -3,219 +3,234 @@ import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 
+/* =========================================================
+   PROMPT DA LÍVIA
+========================================================= */
+
 const SYSTEM_INSTRUCTION = `
 Você é Lívia, a assistente virtual do Levia.
 
-Você conversa como uma companheira de rotina próxima, natural, acolhedora e prática.
-
-Você ajuda o usuário a acompanhar:
-- alimentação;
-- hidratação;
-- peso;
-- atividade física;
-- evolução;
-- IMC;
-- metas semanais.
-
-Você pode identificar quando o usuário está INFORMANDO algo que deseja registrar no Levia.
+Fale sempre em português do Brasil, de forma natural, acolhedora, prática e objetiva.
 
 Você pode registrar:
-
-1. REFEIÇÃO
-
-Exemplos:
-- "almocei arroz, feijão e carne"
-- "no café comi dois ovos e pão"
-- "jantei frango com salada"
-- "comi uma banana no lanche"
-
-2. ÁGUA
-
-Exemplos:
-- "bebi 500 ml de água"
-- "tomei mais 300 ml"
-- "bebi uma garrafa de 500 ml"
-
-3. ATIVIDADE FÍSICA
-
-Exemplos:
-- "caminhei 30 minutos"
-- "fiz academia por 1 hora"
-- "corri 20 minutos"
-
-4. PESO
-
-Exemplos:
-- "hoje estou com 92,3 kg"
-- "me pesei e deu 91.8"
-
-5. METAS SEMANAIS
-
-Você pode criar ou alterar:
-- meta de dias de atenção à alimentação;
-- meta de dias de atividade física.
-
-Exemplos:
-- "quero treinar 3 vezes por semana"
-- "coloque atividade 2 vezes por semana"
-- "quero cuidar da alimentação 5 dias e treinar 3 dias"
-- "crie uma meta para mim esta semana"
-
-==================================================
-DADOS DO PERFIL
-==================================================
-
-Você poderá receber:
-
-- nome;
-- sexo;
-- altura em centímetros;
-- peso mais recente;
-- IMC;
-- registros dos últimos dias;
-- metas da semana.
-
-Use essas informações somente quando forem relevantes.
-
-Não fique repetindo sexo, altura, peso ou IMC em toda resposta.
-
-Nunca invente:
-- idade;
-- altura;
-- sexo;
+- refeições;
+- água;
+- atividade física;
 - peso;
-- IMC;
-- quantidade de água;
-- exercício;
-- refeição.
-
-Se algum dado necessário estiver ausente, diga que não há informação suficiente para uma estimativa adequada.
-
-==================================================
-IMC
-==================================================
-
-O IMC será calculado pelo sistema usando:
-
-peso / altura²
-
-Você poderá receber o IMC já calculado.
-
-Trate o IMC apenas como um indicador de referência e acompanhamento.
-
-Não use o IMC isoladamente para diagnosticar saúde, doença ou composição corporal.
-
-Quando comentar sobre IMC, explique de forma simples e sem julgamento.
-
-==================================================
-REGRAS DE REGISTRO
-==================================================
-
-Só registre quando o usuário estiver claramente contando algo que:
-
-- comeu;
-- bebeu;
-- fez;
-- mediu;
-- ou quando solicitar claramente uma meta.
-
-Se o usuário estiver apenas perguntando, NÃO registre nada.
-
-Nunca invente dados.
-
-Se a informação for ambígua:
-- não registre;
-- faça uma pergunta curta para esclarecer.
-
-Não invente:
-- horário;
-- quantidade;
-- tipo de refeição;
-- duração de atividade.
+- metas semanais.
 
 ==================================================
 REFEIÇÕES
 ==================================================
 
-Para refeição, escolha somente:
+Quando o usuário informar uma refeição claramente, use:
 
-- "Café da manhã"
-- "Lanche"
-- "Almoço"
-- "Lanche da tarde"
-- "Jantar"
-- "Ceia"
+add_meal
 
-Exemplo:
+Os tipos permitidos são:
 
-Usuário:
-"comi arroz e frango"
+- Café da manhã
+- Lanche
+- Almoço
+- Lanche da tarde
+- Jantar
+- Ceia
 
-Se não der para saber qual refeição foi, NÃO registre.
+Além da descrição, separe os alimentos em food_items.
 
-Pergunte:
-
-"Foi no almoço, jantar ou outra refeição?"
-
-Exemplo:
-
-Usuário:
-"almocei arroz, feijão e carne"
-
-Nesse caso registre como "Almoço".
-
-Quando registrar uma refeição, NÃO responda apenas "registrei".
-
-Você deve:
-
-- confirmar o registro;
-- comentar brevemente pontos positivos;
-- indicar uma possibilidade simples de complementar;
-- evitar julgamento.
-
-Exemplo:
+Cada alimento deve ter:
 
 {
-  "reply": "Registrei seu almoço. Arroz e feijão oferecem carboidratos, fibras e proteínas vegetais. Se fizer sentido para você, pode complementar com uma fonte de proteína e vegetais.",
+  "food": "nome simples do alimento",
+  "quantity": número ou null,
+  "unit": "unidade, fatia, colher, concha, grama etc." ou null,
+  "portion": descrição aproximada ou null,
+  "preparation": modo de preparo ou null
+}
+
+EXEMPLO COM QUANTIDADES:
+
+Usuário:
+"Faça um registro de café da manhã de 2 ovos mexidos com 2 pães integrais."
+
+Resposta:
+
+{
+  "reply": "Entendi seu café da manhã.",
   "actions": [
     {
       "type": "add_meal",
-      "meal_type": "Almoço",
-      "description": "Arroz e feijão"
+      "meal_type": "Café da manhã",
+      "description": "2 ovos mexidos com 2 pães integrais",
+      "food_items": [
+        {
+          "food": "ovo",
+          "quantity": 2,
+          "unit": "unidade",
+          "portion": null,
+          "preparation": "mexido"
+        },
+        {
+          "food": "pão integral",
+          "quantity": 2,
+          "unit": "unidade",
+          "portion": null,
+          "preparation": null
+        }
+      ]
     }
   ]
 }
 
-Não diga que a refeição foi "ruim".
+EXEMPLO SEM QUANTIDADES:
 
-Não use alimentos como:
-- proibidos;
-- lixo;
-- pecado;
-- refeição livre.
+Usuário:
+"Comi pão com ovo no café da manhã."
+
+Resposta:
+
+{
+  "reply": "Entendi seu café da manhã.",
+  "actions": [
+    {
+      "type": "add_meal",
+      "meal_type": "Café da manhã",
+      "description": "Pão com ovo",
+      "food_items": [
+        {
+          "food": "pão",
+          "quantity": null,
+          "unit": null,
+          "portion": null,
+          "preparation": null
+        },
+        {
+          "food": "ovo",
+          "quantity": null,
+          "unit": null,
+          "portion": null,
+          "preparation": null
+        }
+      ]
+    }
+  ]
+}
+
+NÃO invente quantidade.
+
+Se o usuário não informou quantidade suficiente, o backend registrará a refeição e perguntará a quantidade.
+
+==================================================
+COMPLETAR ÚLTIMA REFEIÇÃO
+==================================================
+
+Se a Lívia acabou de perguntar quantidades para uma refeição já registrada e o usuário responder apenas com essas quantidades, NÃO use add_meal novamente.
+
+Use:
+
+complete_last_meal
+
+Exemplo:
+
+Lívia:
+"Registrei seu café da manhã. Para estimar melhor as calorias, quantos ovos e quantos pães você comeu?"
+
+Usuário:
+"2 ovos e 1 pão."
+
+Resposta:
+
+{
+  "reply": "Perfeito, agora consigo estimar melhor.",
+  "actions": [
+    {
+      "type": "complete_last_meal",
+      "food_items": [
+        {
+          "food": "ovo",
+          "quantity": 2,
+          "unit": "unidade",
+          "portion": null,
+          "preparation": null
+        },
+        {
+          "food": "pão",
+          "quantity": 1,
+          "unit": "unidade",
+          "portion": null,
+          "preparation": null
+        }
+      ]
+    }
+  ]
+}
+
+==================================================
+PORÇÕES
+==================================================
+
+Preserve quantidades informadas.
+
+Exemplos:
+
+"2 ovos"
+quantity = 2
+unit = "unidade"
+
+"1 pão francês"
+quantity = 1
+unit = "unidade"
+
+"2 fatias de pão integral"
+quantity = 2
+unit = "fatia"
+
+"3 colheres de arroz"
+quantity = 3
+unit = "colher"
+
+"1 concha de feijão"
+quantity = 1
+unit = "concha"
+
+"150 g de frango"
+quantity = 150
+unit = "g"
+
+"uma banana"
+quantity = 1
+unit = "unidade"
+
+"um prato pequeno de cuscuz"
+quantity = null
+unit = null
+portion = "porção pequena"
+
+Não invente gramas.
+
+==================================================
+CALORIAS
+==================================================
+
+Você NÃO calcula calorias.
+
+Você NÃO inventa:
+- calorias;
+- proteína;
+- carboidratos;
+- gordura;
+- fibras.
+
+O backend consulta uma base nutricional TACO e faz os cálculos.
 
 ==================================================
 ÁGUA
 ==================================================
 
-Sempre converta para mililitros.
-
-Exemplos:
-
-- "500 ml" = 500
-- "1 litro" = 1000
-- "1,5 litro" = 1500
-
-Não estime copos ou garrafas se o tamanho não tiver sido informado.
-
-Quando registrar água:
-- confirme;
-- faça um comentário breve sobre hidratação.
-
 Exemplo:
 
 {
-  "reply": "Pronto! Somei 500 ml à sua hidratação de hoje. Manter a ingestão distribuída ao longo do dia costuma ser mais confortável do que beber grandes volumes de uma vez.",
+  "reply": "Entendi.",
   "actions": [
     {
       "type": "add_water",
@@ -224,43 +239,14 @@ Exemplo:
   ]
 }
 
+Converta litros para ml.
+
 ==================================================
-ATIVIDADE FÍSICA
+ATIVIDADE
 ==================================================
-
-Registre:
-
-- nome da atividade;
-- duração, somente quando informada.
-
-Não invente calorias gastas.
-
-Ao registrar atividade:
-
-- reconheça o esforço;
-- explique brevemente algum benefício;
-- se houver informações suficientes, pode comentar gasto energético de forma aproximada.
-
-Nunca apresente gasto calórico como número garantido.
-
-Use expressões como:
-
-- "aproximadamente";
-- "estimativa";
-- "pode variar".
-
-Considere quando disponível:
-
-- peso recente;
-- duração;
-- intensidade.
-
-Se não houver informações suficientes, não invente.
-
-Exemplo:
 
 {
-  "reply": "Boa! Registrei seus 30 minutos de caminhada. Caminhar contribui para o condicionamento cardiovascular e aumenta o gasto energético. O gasto exato pode variar conforme ritmo, terreno e intensidade.",
+  "reply": "Entendi.",
   "actions": [
     {
       "type": "add_activity",
@@ -270,224 +256,84 @@ Exemplo:
   ]
 }
 
+Não invente duração.
+
 ==================================================
 PESO
 ==================================================
 
-Registre em kg.
-
-Aceite vírgula ou ponto decimal.
-
-Quando registrar peso:
-
-- confirme;
-- não comemore nem critique uma única medição;
-- explique que a tendência ao longo do tempo é mais relevante.
-
-Exemplo:
-
 {
-  "reply": "Registrei seu peso de hoje: 92,3 kg. Uma medida isolada pode variar por hidratação, alimentação e outros fatores, então vale observar principalmente a tendência ao longo das semanas.",
+  "reply": "Entendi.",
   "actions": [
     {
       "type": "add_weight",
-      "weight": 92.3
+      "weight": 91.8
     }
   ]
 }
 
 ==================================================
-METAS SEMANAIS
+METAS
 ==================================================
 
-Você pode criar ou alterar metas semanais.
-
-As metas permitidas são:
-
-1. dias de atenção à alimentação;
-2. dias de atividade física.
-
-Os valores devem ficar entre 1 e 7.
-
-As metas devem ser:
-
-- realistas;
-- progressivas;
-- sustentáveis;
-- compatíveis com a rotina registrada.
-
-Não transforme metas em punição.
-
-Não proponha aumentos exagerados.
-
-Exemplo:
-
-Se o usuário fez atividade física em 2 dias recentemente, uma meta inicial de 2 ou 3 dias pode fazer sentido.
-
-Evite saltos como:
-
-1 dia -> 6 dias.
-
-Para alimentação, use linguagem como:
-
-- "organizar a alimentação";
-- "manter atenção à rotina alimentar";
-- "registrar as refeições";
-- "buscar refeições mais equilibradas".
-
-Evite falar em "dieta restritiva".
-
-Exemplo:
-
 {
-  "reply": "Pelo seu ritmo recente, podemos começar com uma meta sustentável: atenção à alimentação em 5 dias da semana e atividade física em 3 dias. A ideia é buscar consistência, não perfeição.",
+  "reply": "Entendi.",
   "actions": [
     {
       "type": "set_weekly_goals",
       "nutrition_days_target": 5,
       "activity_days_target": 3,
-      "notes": "Priorizar consistência e evolução gradual."
+      "notes": "Priorizar consistência."
     }
   ]
 }
 
-Se o usuário informar claramente os números desejados, respeite a escolha desde que estejam entre 1 e 7.
+Valores entre 1 e 7.
 
-Exemplo:
+==================================================
+REGRAS
+==================================================
 
-Usuário:
-"Coloca alimentação 5 dias e academia 2 vezes."
+Nunca diga que algo já foi salvo.
 
-Resposta:
+O backend fará a confirmação final.
+
+Nunca exponha raciocínio interno.
+
+Nunca use markdown.
+
+Nunca escreva fora do JSON.
+
+FORMATO:
 
 {
-  "reply": "Pronto! Sua meta desta semana ficou em 5 dias de atenção à alimentação e 2 dias de atividade física.",
-  "actions": [
-    {
-      "type": "set_weekly_goals",
-      "nutrition_days_target": 5,
-      "activity_days_target": 2,
-      "notes": "Meta definida pelo usuário."
-    }
-  ]
-}
-
-==================================================
-VÁRIAS AÇÕES
-==================================================
-
-É permitido retornar várias ações quando o usuário informar várias coisas na mesma mensagem.
-
-Exemplo:
-
-Usuário:
-"Almocei arroz e feijão e bebi 500 ml de água."
-
-Resposta:
-
-{
-  "reply": "Pronto! Registrei seu almoço e também somei 500 ml à sua hidratação de hoje. Arroz e feijão formam uma boa base para a refeição, e você pode complementar com proteína e vegetais.",
-  "actions": [
-    {
-      "type": "add_meal",
-      "meal_type": "Almoço",
-      "description": "Arroz e feijão"
-    },
-    {
-      "type": "add_water",
-      "amount_ml": 500
-    }
-  ]
-}
-
-==================================================
-CONVERSA NORMAL
-==================================================
-
-Quando for apenas conversa:
-
-{
-  "reply": "Claro! Posso analisar sua rotina recente e ajudar você a identificar pontos para melhorar.",
+  "reply": "texto",
   "actions": []
 }
-
-==================================================
-ESTILO
-==================================================
-
-Responda sempre em português do Brasil.
-
-Fale de forma:
-
-- natural;
-- humana;
-- próxima;
-- acolhedora;
-- prática;
-- objetiva.
-
-Use primeira pessoa como Lívia quando fizer sentido.
-
-Não pareça um relatório.
-
-Não incentive restrição alimentar extrema.
-
-Não dê diagnóstico médico.
-
-Não prescreva medicamentos.
-
-Não prescreva suplementos.
-
-Não prescreva dietas terapêuticas.
-
-Não invente calorias ou macronutrientes.
-
-Quando analisar alimentação, considere:
-
-- variedade;
-- proteína;
-- fibras;
-- frutas;
-- vegetais;
-- hidratação;
-- saciedade;
-- regularidade.
-
-Quando houver situação como:
-
-- desmaio;
-- dor intensa;
-- sinais de transtorno alimentar;
-- sofrimento importante;
-- sintomas médicos relevantes;
-
-recomende avaliação profissional.
-
-==================================================
-FORMATO OBRIGATÓRIO
-==================================================
-
-Você deve responder SOMENTE com um JSON válido.
-
-Formato:
-
-{
-  "reply": "texto que será mostrado ao usuário",
-  "actions": []
-}
-
-Nunca coloque markdown.
-
-Nunca coloque blocos de código.
-
-Nunca escreva nada fora do JSON.
 `;
+
+/* =========================================================
+   TIPOS
+========================================================= */
+
+type FoodItem = {
+  food: string;
+  quantity?: number | null;
+  unit?: string | null;
+  portion?: string | null;
+  preparation?: string | null;
+};
 
 type LiviaAction =
   | {
       type: "add_meal";
       meal_type: string;
       description: string;
+      food_items?: FoodItem[];
+    }
+  | {
+      type: "complete_last_meal";
+      food_items: FoodItem[];
     }
   | {
       type: "add_water";
@@ -514,6 +360,25 @@ type LiviaResponse = {
   actions: LiviaAction[];
 };
 
+type FoodRecord = {
+  id: string;
+  name: string;
+  normalized_name: string;
+  kcal_100g: number | string | null;
+  protein_100g: number | string | null;
+  carbs_100g: number | string | null;
+  fat_100g: number | string | null;
+  fiber_100g: number | string | null;
+  source: string;
+};
+
+type ResolvedPortion = {
+  label: string;
+  grams_min: number;
+  grams_max: number;
+  estimated: boolean;
+};
+
 const VALID_MEAL_TYPES = [
   "Café da manhã",
   "Lanche",
@@ -523,57 +388,47 @@ const VALID_MEAL_TYPES = [
   "Ceia",
 ];
 
+/* =========================================================
+   SUPABASE
+========================================================= */
+
 function getSupabase() {
-  const supabaseUrl =
+  const url =
     process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-  const supabaseKey =
+  const key =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-  if (!supabaseUrl) {
+  if (!url || !key) {
     throw new Error(
-      "NEXT_PUBLIC_SUPABASE_URL não configurada."
+      "Configuração do Supabase ausente."
     );
   }
 
-  if (!supabaseKey) {
-    throw new Error(
-      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY não configurada."
-    );
-  }
-
-  return createClient(
-    supabaseUrl,
-    supabaseKey
-  );
+  return createClient(url, key);
 }
 
-function getTodayBrazil() {
-  const formatter =
-    new Intl.DateTimeFormat(
-      "en-CA",
-      {
-        timeZone: "America/Recife",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      }
-    );
+/* =========================================================
+   DATA
+========================================================= */
 
-  return formatter.format(
-    new Date()
-  );
+function getTodayBrazil() {
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      timeZone: "America/Recife",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }
+  ).format(new Date());
 }
 
 function getWeekStartBrazil() {
   const today =
     getTodayBrazil();
 
-  const [
-    year,
-    month,
-    day,
-  ] =
+  const [year, month, day] =
     today
       .split("-")
       .map(Number);
@@ -583,133 +438,1559 @@ function getWeekStartBrazil() {
       year,
       month - 1,
       day,
-      12,
-      0,
-      0
+      12
     );
 
   const weekday =
     date.getDay();
 
-  const difference =
+  const diff =
     weekday === 0
       ? -6
       : 1 - weekday;
 
   date.setDate(
     date.getDate() +
-      difference
+      diff
   );
 
-  const newYear =
-    date.getFullYear();
-
-  const newMonth =
+  return [
+    date.getFullYear(),
     String(
       date.getMonth() + 1
-    ).padStart(2, "0");
-
-  const newDay =
+    ).padStart(2, "0"),
     String(
       date.getDate()
-    ).padStart(2, "0");
-
-  return `${newYear}-${newMonth}-${newDay}`;
+    ).padStart(2, "0"),
+  ].join("-");
 }
 
-function calculateBMI(
-  weight: number | null,
-  heightCm: number | null
+/* =========================================================
+   NORMALIZAÇÃO
+========================================================= */
+
+function normalizeText(
+  value: string
 ) {
-  if (
-    !weight ||
-    !heightCm ||
-    heightCm <= 0
-  ) {
-    return null;
-  }
-
-  const heightM =
-    heightCm / 100;
-
-  return Number(
-    (
-      weight /
-      (heightM * heightM)
-    ).toFixed(1)
-  );
+  return String(
+    value || ""
+  )
+    .normalize("NFD")
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .replace(
+      /[^a-zA-Z0-9\s]/g,
+      " "
+    )
+    .replace(
+      /\s+/g,
+      " "
+    )
+    .toLowerCase()
+    .trim();
 }
 
-function cleanJsonResponse(
-  text: string
-) {
-  let cleaned =
-    text.trim();
+function cleanJsonResponse(text: string) {
+  let cleaned = String(text || "").trim();
 
-  cleaned =
-    cleaned.replace(
-      /^```json\s*/i,
-      ""
-    );
+  cleaned = cleaned
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/, "")
+    .replace(/\s*```$/, "")
+    .trim();
 
-  cleaned =
-    cleaned.replace(
-      /^```\s*/,
-      ""
-    );
-
-  cleaned =
-    cleaned.replace(
-      /\s*```$/,
-      ""
-    );
-
-  const firstBrace =
-    cleaned.indexOf("{");
-
-  const lastBrace =
-    cleaned.lastIndexOf("}");
+  const firstBrace = cleaned.indexOf("{");
+  const lastBrace = cleaned.lastIndexOf("}");
 
   if (
     firstBrace !== -1 &&
-    lastBrace !== -1
+    lastBrace !== -1 &&
+    lastBrace > firstBrace
   ) {
-    cleaned =
-      cleaned.slice(
-        firstBrace,
-        lastBrace + 1
-      );
+    cleaned = cleaned.slice(
+      firstBrace,
+      lastBrace + 1
+    );
   }
 
   return cleaned;
 }
+function unwrapLiviaResponse(
+  parsed: any
+): LiviaResponse {
+  let reply =
+    typeof parsed?.reply === "string"
+      ? parsed.reply.trim()
+      : "";
+
+  let actions =
+    Array.isArray(parsed?.actions)
+      ? parsed.actions
+      : [];
+
+  /*
+   * Às vezes o modelo coloca outro JSON
+   * dentro do campo reply.
+   *
+   * Exemplo:
+   * {
+   *   "reply": "{\"reply\":\"texto\",\"actions\":[...]}"
+   * }
+   */
+  if (
+    reply.startsWith("{") &&
+    reply.endsWith("}")
+  ) {
+    try {
+      const nested =
+        JSON.parse(
+          cleanJsonResponse(reply)
+        );
+
+      if (
+        typeof nested?.reply === "string"
+      ) {
+        reply =
+          nested.reply.trim();
+      }
+
+      if (
+        Array.isArray(nested?.actions) &&
+        nested.actions.length > 0
+      ) {
+        actions =
+          nested.actions;
+      }
+    } catch {
+      // mantém a resposta original
+    }
+  }
+
+  return {
+    reply,
+    actions,
+  };
+}
+
+/* =========================================================
+   BUSCA DE ALIMENTO
+========================================================= */
+
+function foodScore(
+  food: FoodRecord,
+  search: string
+) {
+  const name =
+    normalizeText(
+      food.normalized_name ||
+        food.name
+    );
+
+  let score =
+    0;
+
+  if (
+    name === search
+  ) {
+    score +=
+      100;
+  }
+
+  if (
+    name.startsWith(
+      search
+    )
+  ) {
+    score +=
+      60;
+  }
+
+  if (
+    name.includes(
+      search
+    )
+  ) {
+    score +=
+      40;
+  }
+
+  const words =
+    search
+      .split(" ")
+      .filter(
+        (word) =>
+          word.length >= 3
+      );
+
+  for (
+    const word of words
+  ) {
+    if (
+      name.includes(
+        word
+      )
+    ) {
+      score +=
+        10;
+    }
+  }
+
+  if (
+    name.includes(
+      "cozido"
+    )
+  ) {
+    score +=
+      4;
+  }
+
+  if (
+    name.includes(
+      "cru"
+    )
+  ) {
+    score -=
+      3;
+  }
+
+  return score;
+}
+
+async function findFood(
+  db: ReturnType<typeof createClient>,
+  foodName: string
+): Promise<FoodRecord | null> {
+  let normalized =
+    normalizeText(
+      foodName
+    );
+
+  const replacements: Record<
+    string,
+    string
+  > = {
+    toscana:
+      "linguica",
+
+    "linguica toscana":
+      "linguica",
+
+    "pao de forma integral":
+      "pao integral",
+
+    "pao integral":
+      "pao integral",
+
+    "ovo mexido":
+      "ovo",
+  };
+
+  if (
+    replacements[
+      normalized
+    ]
+  ) {
+    normalized =
+      replacements[
+        normalized
+      ];
+  }
+
+  /* alias */
+
+  const aliasRes =
+    await db
+      .from(
+        "food_aliases"
+      )
+      .select(`
+        foods (
+          id,
+          name,
+          normalized_name,
+          kcal_100g,
+          protein_100g,
+          carbs_100g,
+          fat_100g,
+          fiber_100g,
+          source
+        )
+      `)
+      .eq(
+        "normalized_alias",
+        normalized
+      )
+      .limit(1);
+
+  if (
+    aliasRes.data?.length
+  ) {
+    const relation =
+      (aliasRes.data[0] as any)
+        .foods;
+
+    const food =
+      Array.isArray(
+        relation
+      )
+        ? relation[0]
+        : relation;
+
+    if (food) {
+      return food;
+    }
+  }
+
+  /* exato */
+
+  const exact =
+    await db
+      .from("foods")
+      .select("*")
+      .eq(
+        "normalized_name",
+        normalized
+      )
+      .limit(1);
+
+  if (
+    exact.data?.length
+  ) {
+    return exact
+      .data[0] as FoodRecord;
+  }
+
+  /* contendo */
+
+  const contains =
+    await db
+      .from("foods")
+      .select("*")
+      .ilike(
+        "normalized_name",
+        `%${normalized}%`
+      )
+      .limit(30);
+
+  if (
+    contains.data?.length
+  ) {
+    return (
+      contains.data as FoodRecord[]
+    )
+      .map(
+        (food) => ({
+          food,
+          score:
+            foodScore(
+              food,
+              normalized
+            ),
+        })
+      )
+      .sort(
+        (a, b) =>
+          b.score -
+          a.score
+      )[0].food;
+  }
+
+  /* palavras */
+
+  const words =
+    normalized
+      .split(" ")
+      .filter(
+        (word) =>
+          word.length >= 3
+      );
+
+  if (!words.length) {
+    return null;
+  }
+
+  let query =
+    db
+      .from("foods")
+      .select("*");
+
+  for (
+    const word of words
+  ) {
+    query =
+      query.ilike(
+        "normalized_name",
+        `%${word}%`
+      );
+  }
+
+  const result =
+    await query.limit(
+      30
+    );
+
+  if (
+    !result.data
+      ?.length
+  ) {
+    return null;
+  }
+
+  return (
+    result.data as FoodRecord[]
+  )
+    .map(
+      (food) => ({
+        food,
+        score:
+          foodScore(
+            food,
+            normalized
+          ),
+      })
+    )
+    .sort(
+      (a, b) =>
+        b.score -
+        a.score
+    )[0].food;
+}
+
+/* =========================================================
+   UNIDADES E PESOS MÉDIOS
+========================================================= */
+
+function normalizeUnit(
+  unit?: string | null
+) {
+  const value =
+    normalizeText(
+      unit || ""
+    );
+
+  if (
+    [
+      "g",
+      "grama",
+      "gramas",
+    ].includes(value)
+  ) {
+    return "g";
+  }
+
+  if (
+    value.includes(
+      "fatia"
+    )
+  ) {
+    return "fatia";
+  }
+
+  if (
+    value.includes(
+      "colher"
+    )
+  ) {
+    return "colher";
+  }
+
+  if (
+    value.includes(
+      "concha"
+    )
+  ) {
+    return "concha";
+  }
+
+  if (
+    value.includes(
+      "xicara"
+    )
+  ) {
+    return "xicara";
+  }
+
+  if (
+    value.includes(
+      "unidade"
+    ) ||
+    value ===
+      "un" ||
+    value ===
+      "unidades"
+  ) {
+    return "unidade";
+  }
+
+  return value;
+}
+
+/*
+ * Faixas de peso usadas apenas para
+ * transformar medidas caseiras informadas
+ * pelo usuário em gramas aproximadas.
+ *
+ * O valor nutricional continua vindo da TACO.
+ */
+
+function commonUnitWeight(
+  foodName: string,
+  unit: string
+): {
+  min: number;
+  max: number;
+} | null {
+  const food =
+    normalizeText(
+      foodName
+    );
+
+  if (
+    unit ===
+    "unidade"
+  ) {
+    if (
+      food.includes(
+        "ovo"
+      )
+    ) {
+      return {
+        min: 45,
+        max: 60,
+      };
+    }
+
+    if (
+      food.includes(
+        "pao frances"
+      )
+    ) {
+      return {
+        min: 45,
+        max: 55,
+      };
+    }
+
+    if (
+      food.includes(
+        "pao integral"
+      ) ||
+      food ===
+        "pao"
+    ) {
+      return {
+        min: 40,
+        max: 60,
+      };
+    }
+
+    if (
+      food.includes(
+        "banana"
+      )
+    ) {
+      return {
+        min: 70,
+        max: 120,
+      };
+    }
+
+    if (
+      food.includes(
+        "maca"
+      )
+    ) {
+      return {
+        min: 100,
+        max: 160,
+      };
+    }
+  }
+
+  if (
+    unit ===
+    "fatia"
+  ) {
+    if (
+      food.includes(
+        "pao"
+      )
+    ) {
+      return {
+        min: 20,
+        max: 30,
+      };
+    }
+
+    if (
+      food.includes(
+        "queijo"
+      )
+    ) {
+      return {
+        min: 20,
+        max: 30,
+      };
+    }
+  }
+
+  if (
+    unit ===
+    "colher"
+  ) {
+    if (
+      food.includes(
+        "arroz"
+      )
+    ) {
+      return {
+        min: 20,
+        max: 30,
+      };
+    }
+
+    if (
+      food.includes(
+        "feijao"
+      )
+    ) {
+      return {
+        min: 20,
+        max: 35,
+      };
+    }
+
+    if (
+      food.includes(
+        "cuscuz"
+      )
+    ) {
+      return {
+        min: 20,
+        max: 30,
+      };
+    }
+  }
+
+  if (
+    unit ===
+    "concha"
+  ) {
+    if (
+      food.includes(
+        "feijao"
+      )
+    ) {
+      return {
+        min: 80,
+        max: 120,
+      };
+    }
+  }
+
+  return null;
+}
+
+/* =========================================================
+   RESOLVER PORÇÃO
+========================================================= */
+
+async function resolvePortion(
+  db: ReturnType<typeof createClient>,
+  food: FoodRecord,
+  item: FoodItem
+): Promise<ResolvedPortion | null> {
+  const quantity =
+    item.quantity ===
+      null ||
+    item.quantity ===
+      undefined
+      ? null
+      : Number(
+          item.quantity
+        );
+
+  const unit =
+    normalizeUnit(
+      item.unit
+    );
+
+  /*
+   * Gramas exatas
+   */
+  if (
+    quantity !== null &&
+    Number.isFinite(
+      quantity
+    ) &&
+    quantity > 0 &&
+    unit === "g"
+  ) {
+    return {
+      label:
+        `${quantity} g`,
+
+      grams_min:
+        quantity,
+
+      grams_max:
+        quantity,
+
+      estimated:
+        false,
+    };
+  }
+
+  /*
+   * Primeiro procura uma medida
+   * cadastrada no Supabase.
+   */
+  if (
+    quantity !== null &&
+    Number.isFinite(
+      quantity
+    ) &&
+    quantity > 0 &&
+    unit
+  ) {
+    const portions =
+      await db
+        .from(
+          "food_portions"
+        )
+        .select("*")
+        .eq(
+          "food_id",
+          food.id
+        );
+
+    if (
+      portions.data
+        ?.length
+    ) {
+      const found =
+        portions.data.find(
+          (
+            row: any
+          ) => {
+            const label =
+              normalizeText(
+                row.label
+              );
+
+            return (
+              label.includes(
+                unit
+              ) ||
+              unit.includes(
+                label
+              )
+            );
+          }
+        );
+
+      if (found) {
+        const min =
+          Number(
+            found.grams_min ||
+              found.grams_default
+          );
+
+        const max =
+          Number(
+            found.grams_max ||
+              found.grams_default
+          );
+
+        if (
+          min > 0 &&
+          max > 0
+        ) {
+          return {
+            label:
+              `${quantity} ${unit}`,
+
+            grams_min:
+              min *
+              quantity,
+
+            grams_max:
+              max *
+              quantity,
+
+            estimated:
+              false,
+          };
+        }
+      }
+    }
+
+    /*
+     * Fallback com pesos médios
+     * de medidas caseiras.
+     */
+    const average =
+      commonUnitWeight(
+        item.food,
+        unit
+      );
+
+    if (average) {
+      return {
+        label:
+          `${quantity} ${unit}`,
+
+        grams_min:
+          average.min *
+          quantity,
+
+        grams_max:
+          average.max *
+          quantity,
+
+        estimated:
+          true,
+      };
+    }
+  }
+
+  /*
+   * Porção pequena/média/grande
+   */
+  const portion =
+    normalizeText(
+      item.portion ||
+        ""
+    );
+
+  if (
+    portion.includes(
+      "pequena"
+    ) ||
+    portion.includes(
+      "pequeno"
+    )
+  ) {
+    return {
+      label:
+        "porção pequena",
+
+      grams_min:
+        80,
+
+      grams_max:
+        120,
+
+      estimated:
+        true,
+    };
+  }
+
+  if (
+    portion.includes(
+      "media"
+    ) ||
+    portion.includes(
+      "medio"
+    )
+  ) {
+    return {
+      label:
+        "porção média",
+
+      grams_min:
+        120,
+
+      grams_max:
+        180,
+
+      estimated:
+        true,
+    };
+  }
+
+  if (
+    portion.includes(
+      "grande"
+    )
+  ) {
+    return {
+      label:
+        "porção grande",
+
+      grams_min:
+        180,
+
+      grams_max:
+        250,
+
+      estimated:
+        true,
+    };
+  }
+
+  return null;
+}
+
+/* =========================================================
+   ESTIMATIVA NUTRICIONAL
+========================================================= */
+
+async function estimateMealNutrition(
+  db: ReturnType<typeof createClient>,
+  foodItems: FoodItem[]
+) {
+  let kcalMin =
+    0;
+
+  let kcalMax =
+    0;
+
+  let proteinMin =
+    0;
+
+  let proteinMax =
+    0;
+
+  let carbsMin =
+    0;
+
+  let carbsMax =
+    0;
+
+  let fatMin =
+    0;
+
+  let fatMax =
+    0;
+
+  let fiberMin =
+    0;
+
+  let fiberMax =
+    0;
+
+  let estimatedCount =
+    0;
+
+  const breakdown:
+    any[] = [];
+
+  const missing:
+    string[] = [];
+
+  for (
+    const item of foodItems
+  ) {
+    const food =
+      await findFood(
+        db,
+        item.food
+      );
+
+    if (!food) {
+      missing.push(
+        item.food
+      );
+
+      breakdown.push({
+        food:
+          item.food,
+        found:
+          false,
+      });
+
+      continue;
+    }
+
+    const portion =
+      await resolvePortion(
+        db,
+        food,
+        item
+      );
+
+    if (!portion) {
+      missing.push(
+        item.food
+      );
+
+      breakdown.push({
+        requested_food:
+          item.food,
+
+        food:
+          food.name,
+
+        found:
+          true,
+
+        portion_found:
+          false,
+
+        source:
+          food.source,
+      });
+
+      continue;
+    }
+
+    if (
+      portion.estimated
+    ) {
+      estimatedCount++;
+    }
+
+    const kcal100 =
+      Number(
+        food.kcal_100g
+      );
+
+    if (
+      !Number.isFinite(
+        kcal100
+      )
+    ) {
+      missing.push(
+        item.food
+      );
+
+      continue;
+    }
+
+    const protein100 =
+      Number(
+        food.protein_100g ||
+          0
+      );
+
+    const carbs100 =
+      Number(
+        food.carbs_100g ||
+          0
+      );
+
+    const fat100 =
+      Number(
+        food.fat_100g ||
+          0
+      );
+
+    const fiber100 =
+      Number(
+        food.fiber_100g ||
+          0
+      );
+
+    const minFactor =
+      portion.grams_min /
+      100;
+
+    const maxFactor =
+      portion.grams_max /
+      100;
+
+    const itemKcalMin =
+      kcal100 *
+      minFactor;
+
+    const itemKcalMax =
+      kcal100 *
+      maxFactor;
+
+    kcalMin +=
+      itemKcalMin;
+
+    kcalMax +=
+      itemKcalMax;
+
+    proteinMin +=
+      protein100 *
+      minFactor;
+
+    proteinMax +=
+      protein100 *
+      maxFactor;
+
+    carbsMin +=
+      carbs100 *
+      minFactor;
+
+    carbsMax +=
+      carbs100 *
+      maxFactor;
+
+    fatMin +=
+      fat100 *
+      minFactor;
+
+    fatMax +=
+      fat100 *
+      maxFactor;
+
+    fiberMin +=
+      fiber100 *
+      minFactor;
+
+    fiberMax +=
+      fiber100 *
+      maxFactor;
+
+    breakdown.push({
+      requested_food:
+        item.food,
+
+      food:
+        food.name,
+
+      quantity:
+        item.quantity ??
+        null,
+
+      unit:
+        item.unit ??
+        null,
+
+      portion:
+        portion.label,
+
+      grams_min:
+        portion.grams_min,
+
+      grams_max:
+        portion.grams_max,
+
+      kcal_100g:
+        kcal100,
+
+      kcal_min:
+        Number(
+          itemKcalMin.toFixed(
+            1
+          )
+        ),
+
+      kcal_max:
+        Number(
+          itemKcalMax.toFixed(
+            1
+          )
+        ),
+
+      source:
+        food.source,
+    });
+  }
+
+  const calculated =
+    breakdown.filter(
+      (row) =>
+        row.kcal_min !==
+        undefined
+    );
+
+  if (
+    calculated.length ===
+    0
+  ) {
+    return {
+      estimate:
+        null,
+
+      missing,
+    };
+  }
+
+  const allCalculated =
+    calculated.length ===
+    foodItems.length;
+
+  let confidence =
+    "low";
+
+  if (
+    allCalculated &&
+    estimatedCount ===
+      0
+  ) {
+    confidence =
+      "high";
+  } else if (
+    allCalculated
+  ) {
+    confidence =
+      "moderate";
+  }
+
+  return {
+    estimate: {
+      kcal_min:
+        Number(
+          kcalMin.toFixed(
+            1
+          )
+        ),
+
+      kcal_max:
+        Number(
+          kcalMax.toFixed(
+            1
+          )
+        ),
+
+      protein_min:
+        Number(
+          proteinMin.toFixed(
+            1
+          )
+        ),
+
+      protein_max:
+        Number(
+          proteinMax.toFixed(
+            1
+          )
+        ),
+
+      carbs_min:
+        Number(
+          carbsMin.toFixed(
+            1
+          )
+        ),
+
+      carbs_max:
+        Number(
+          carbsMax.toFixed(
+            1
+          )
+        ),
+
+      fat_min:
+        Number(
+          fatMin.toFixed(
+            1
+          )
+        ),
+
+      fat_max:
+        Number(
+          fatMax.toFixed(
+            1
+          )
+        ),
+
+      fiber_min:
+        Number(
+          fiberMin.toFixed(
+            1
+          )
+        ),
+
+      fiber_max:
+        Number(
+          fiberMax.toFixed(
+            1
+          )
+        ),
+
+      confidence,
+
+      breakdown,
+    },
+
+    missing,
+  };
+}
+
+/* =========================================================
+   ÚLTIMA REFEIÇÃO SEM ESTIMATIVA
+========================================================= */
+
+async function findLastMealWithoutEstimate(
+  db: ReturnType<typeof createClient>,
+  userId: string,
+  today: string
+) {
+  const meals =
+    await db
+      .from("meals")
+      .select(
+        "id,meal_type,description,created_at"
+      )
+      .eq(
+        "user_id",
+        userId
+      )
+      .eq(
+        "meal_date",
+        today
+      )
+      .order(
+        "created_at",
+        {
+          ascending:
+            false,
+        }
+      )
+      .limit(10);
+
+  if (
+    !meals.data
+      ?.length
+  ) {
+    return null;
+  }
+
+  const estimates =
+    await db
+      .from(
+        "meal_nutrition_estimates"
+      )
+      .select(
+        "meal_id"
+      )
+      .eq(
+        "user_id",
+        userId
+      );
+
+  const estimatedIds =
+    new Set(
+      (
+        estimates.data ||
+        []
+      )
+        .map(
+          (row) =>
+            row.meal_id
+        )
+        .filter(
+          Boolean
+        )
+    );
+
+  return (
+    meals.data.find(
+      (meal) =>
+        !estimatedIds.has(
+          meal.id
+        )
+    ) ||
+    null
+  );
+}
+
+
+/* =========================================================
+   COMPLEMENTO DETERMINÍSTICO DE QUANTIDADES
+========================================================= */
+
+function mergeFoodItemsWithDescription(
+  foodItems: FoodItem[],
+  description: string
+): FoodItem[] {
+  const items = Array.isArray(foodItems)
+    ? foodItems.map((item) => ({ ...item }))
+    : [];
+
+  const normalizedDescription = normalizeText(description);
+
+  function upsertQuantity(
+    aliases: string[],
+    food: string,
+    regex: RegExp,
+    unit = "unidade"
+  ) {
+    const match = normalizedDescription.match(regex);
+
+    if (!match) {
+      return;
+    }
+
+    const quantity = Number(
+      String(match[1]).replace(",", ".")
+    );
+
+    if (
+      !Number.isFinite(quantity) ||
+      quantity <= 0
+    ) {
+      return;
+    }
+
+    const existing = items.find((item) => {
+      const current = normalizeText(item.food);
+
+      return aliases.some((alias) =>
+        current.includes(alias)
+      );
+    });
+
+    if (existing) {
+      if (
+        existing.quantity === null ||
+        existing.quantity === undefined
+      ) {
+        existing.quantity = quantity;
+      }
+
+      if (!existing.unit) {
+        existing.unit = unit;
+      }
+
+      return;
+    }
+
+    items.push({
+      food,
+      quantity,
+      unit,
+      portion: null,
+      preparation: null,
+    });
+  }
+
+  upsertQuantity(
+    ["ovo"],
+    "ovo",
+    /(\d+(?:[.,]\d+)?)\s+ovos?\b/
+  );
+
+  upsertQuantity(
+    ["pao integral", "pao"],
+    normalizedDescription.includes("integral")
+      ? "pão integral"
+      : "pão",
+    /(\d+(?:[.,]\d+)?)\s+pa(?:o|os|es)\b/
+  );
+
+  upsertQuantity(
+    ["banana"],
+    "banana",
+    /(\d+(?:[.,]\d+)?)\s+bananas?\b/
+  );
+
+  upsertQuantity(
+    ["maca"],
+    "maçã",
+    /(\d+(?:[.,]\d+)?)\s+macas?\b/
+  );
+
+  return items;
+}
+
+/* =========================================================
+   TOTAL DE CALORIAS DO DIA
+========================================================= */
+
+async function getDailyCalories(
+  db: ReturnType<typeof createClient>,
+  userId: string,
+  today: string
+) {
+  const result = await db
+    .from("meal_nutrition_estimates")
+    .select(`
+      id,
+      meal_id,
+      kcal_min,
+      kcal_max,
+      created_at,
+      meals!inner (
+        meal_date,
+        user_id
+      )
+    `)
+    .eq("user_id", userId)
+    .eq("meals.user_id", userId)
+    .eq("meals.meal_date", today)
+    .order("created_at", {
+      ascending: false,
+    });
+
+  if (result.error) {
+    console.error(
+      "Erro ao consultar calorias do dia:",
+      result.error
+    );
+
+    return {
+      min: 0,
+      max: 0,
+      mealsCount: 0,
+    };
+  }
+
+  const uniqueMeals = new Map<
+    string,
+    {
+      kcal_min: number | string | null;
+      kcal_max: number | string | null;
+    }
+  >();
+
+  for (const row of result.data || []) {
+    const key = row.meal_id || row.id;
+
+    if (!uniqueMeals.has(key)) {
+      uniqueMeals.set(key, {
+        kcal_min: row.kcal_min,
+        kcal_max: row.kcal_max,
+      });
+    }
+  }
+
+  let min = 0;
+  let max = 0;
+
+  for (const row of uniqueMeals.values()) {
+    const rowMin = Number(row.kcal_min);
+    const rowMax = Number(row.kcal_max);
+
+    if (Number.isFinite(rowMin)) {
+      min += rowMin;
+    }
+
+    if (Number.isFinite(rowMax)) {
+      max += rowMax;
+    }
+  }
+
+  return {
+    min: Math.round(min),
+    max: Math.round(max),
+    mealsCount: uniqueMeals.size,
+  };
+}
+
+/* =========================================================
+   API
+========================================================= */
 
 export async function POST(
   request: NextRequest
 ) {
   try {
-    /*
-     * OPENROUTER
-     */
-
     const openRouterKey =
       process.env.OPENROUTER_API_KEY;
 
-    if (!openRouterKey) {
+    if (
+      !openRouterKey
+    ) {
       return NextResponse.json(
         {
           error:
-            "OPENROUTER_API_KEY não está configurada.",
+            "OPENROUTER_API_KEY não configurada.",
         },
         {
-          status: 500,
+          status:
+            500,
         }
       );
     }
-
-    /*
-     * AUTENTICAÇÃO
-     */
 
     const authHeader =
       request.headers.get(
@@ -729,7 +2010,8 @@ export async function POST(
             "Não autenticado.",
         },
         {
-          status: 401,
+          status:
+            401,
         }
       );
     }
@@ -738,8 +2020,10 @@ export async function POST(
       getSupabase();
 
     const {
-      data: authData,
-      error: authError,
+      data:
+        authData,
+      error:
+        authError,
     } =
       await supabase.auth.getUser(
         token
@@ -752,10 +2036,11 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            "Sessão inválida. Entre novamente.",
+            "Sessão inválida.",
         },
         {
-          status: 401,
+          status:
+            401,
         }
       );
     }
@@ -763,16 +2048,13 @@ export async function POST(
     const userId =
       authData.user.id;
 
-    /*
-     * MENSAGEM
-     */
-
     const body =
       await request.json();
 
     const message =
       String(
-        body.message || ""
+        body.message ||
+          ""
       ).trim();
 
     if (!message) {
@@ -782,16 +2064,13 @@ export async function POST(
             "Mensagem vazia.",
         },
         {
-          status: 400,
+          status:
+            400,
         }
       );
     }
 
-    /*
-     * SUPABASE COM TOKEN DO USUÁRIO
-     */
-
-    const userSupabase =
+    const db =
       createClient(
         process.env
           .NEXT_PUBLIC_SUPABASE_URL!,
@@ -813,58 +2092,7 @@ export async function POST(
     const weekStart =
       getWeekStartBrazil();
 
-    /*
-     * ÚLTIMOS 7 DIAS
-     */
-
-    const [
-      todayYear,
-      todayMonth,
-      todayDay,
-    ] =
-      today
-        .split("-")
-        .map(Number);
-
-    const sevenDaysAgo =
-      new Date(
-        todayYear,
-        todayMonth - 1,
-        todayDay,
-        12
-      );
-
-    sevenDaysAgo.setDate(
-      sevenDaysAgo.getDate() -
-        7
-    );
-
-    const sinceYear =
-      sevenDaysAgo.getFullYear();
-
-    const sinceMonth =
-      String(
-        sevenDaysAgo.getMonth() +
-          1
-      ).padStart(
-        2,
-        "0"
-      );
-
-    const sinceDay =
-      String(
-        sevenDaysAgo.getDate()
-      ).padStart(
-        2,
-        "0"
-      );
-
-    const since =
-      `${sinceYear}-${sinceMonth}-${sinceDay}`;
-
-    /*
-     * BUSCAR DADOS
-     */
+    /* CONTEXTO */
 
     const [
       profileRes,
@@ -873,10 +2101,13 @@ export async function POST(
       logsRes,
       weightsRes,
       goalsRes,
+      caloriesRes,
     ] =
       await Promise.all([
-        userSupabase
-          .from("profiles")
+        db
+          .from(
+            "profiles"
+          )
           .select(
             "name,sex,height_cm"
           )
@@ -886,225 +2117,280 @@ export async function POST(
           )
           .maybeSingle(),
 
-        userSupabase
+        db
           .from("meals")
           .select(
             "meal_type,description,meal_date"
           )
-          .gte(
-            "meal_date",
-            since
+          .eq(
+            "user_id",
+            userId
           )
           .order(
             "meal_date",
             {
-              ascending: false,
+              ascending:
+                false,
             }
           )
           .limit(20),
 
-        userSupabase
+        db
           .from(
             "activities"
           )
           .select(
             "name,duration_minutes,activity_date"
           )
-          .gte(
-            "activity_date",
-            since
+          .eq(
+            "user_id",
+            userId
           )
           .order(
             "activity_date",
             {
-              ascending: false,
+              ascending:
+                false,
             }
           )
           .limit(15),
 
-        userSupabase
+        db
           .from(
             "daily_logs"
           )
           .select(
             "log_date,water_ml,notes"
           )
-          .gte(
-            "log_date",
-            since
+          .eq(
+            "user_id",
+            userId
           )
           .order(
             "log_date",
             {
-              ascending: false,
+              ascending:
+                false,
             }
           )
           .limit(8),
 
-        userSupabase
+        db
           .from(
             "weight_entries"
           )
           .select(
             "weight,recorded_at"
           )
+          .eq(
+            "user_id",
+            userId
+          )
           .order(
             "recorded_at",
             {
-              ascending: false,
+              ascending:
+                false,
             }
           )
           .limit(5),
 
-        userSupabase
+        db
           .from(
             "weekly_goals"
           )
           .select(
-            "nutrition_days_target,activity_days_target,notes,week_start"
+            "nutrition_days_target,activity_days_target,notes"
+          )
+          .eq(
+            "user_id",
+            userId
           )
           .eq(
             "week_start",
             weekStart
           )
           .maybeSingle(),
+
+        db
+          .from("meal_nutrition_estimates")
+          .select(`
+            id,
+            meal_id,
+            kcal_min,
+            kcal_max,
+            created_at,
+            meals!inner (
+              meal_date,
+              user_id
+            )
+          `)
+          .eq(
+            "user_id",
+            userId
+          )
+          .eq(
+            "meals.user_id",
+            userId
+          )
+          .eq(
+            "meals.meal_date",
+            today
+          )
+          .order(
+            "created_at",
+            {
+              ascending: false,
+            }
+          ),
       ]);
 
-    /*
-     * PERFIL
-     */
+    const initialCaloriesRows =
+      caloriesRes.data || [];
 
-    const heightCm =
-      profileRes.data
-        ?.height_cm
-        ? Number(
-            profileRes.data
-              .height_cm
-          )
-        : null;
+    const initialCaloriesByMeal =
+      new Map<string, any>();
 
-    const latestWeight =
-      weightsRes.data?.[0]
-        ?.weight
-        ? Number(
-            weightsRes.data[0]
-              .weight
-          )
-        : null;
+    for (
+      const row of initialCaloriesRows
+    ) {
+      const key =
+        row.meal_id ||
+        row.id;
 
-    const bmi =
-      calculateBMI(
-        latestWeight,
-        heightCm
-      );
-
-    /*
-     * CONTAGEM DE DIAS
-     */
-
-    const nutritionDays =
-      new Set(
-        (mealsRes.data || [])
-          .filter(
-            (meal) =>
-              meal.meal_date >=
-              weekStart
-          )
-          .map(
-            (meal) =>
-              meal.meal_date
-          )
-      ).size;
-
-    const activityDays =
-      new Set(
-        (
-          activitiesRes.data ||
-          []
+      if (
+        !initialCaloriesByMeal.has(
+          key
         )
-          .filter(
-            (activity) =>
-              activity.activity_date >=
-              weekStart
-          )
-          .map(
-            (activity) =>
-              activity.activity_date
-          )
-      ).size;
+      ) {
+        initialCaloriesByMeal.set(
+          key,
+          row
+        );
+      }
+    }
 
-    /*
-     * CONTEXTO
-     */
+    const caloriesToday = {
+      min: Math.round(
+        Array.from(
+          initialCaloriesByMeal.values()
+        ).reduce(
+          (sum, row) =>
+            sum +
+            (
+              Number.isFinite(
+                Number(row.kcal_min)
+              )
+                ? Number(
+                    row.kcal_min
+                  )
+                : 0
+            ),
+          0
+        )
+      ),
+
+      max: Math.round(
+        Array.from(
+          initialCaloriesByMeal.values()
+        ).reduce(
+          (sum, row) =>
+            sum +
+            (
+              Number.isFinite(
+                Number(row.kcal_max)
+              )
+                ? Number(
+                    row.kcal_max
+                  )
+                : 0
+            ),
+          0
+        )
+      ),
+
+      mealsCount:
+        initialCaloriesByMeal.size,
+    };
 
     const context = {
       today,
-
-      weekStart,
-
-      profile: {
-        name:
-          profileRes.data
-            ?.name ||
-          null,
-
-        sex:
-          profileRes.data
-            ?.sex ||
-          null,
-
-        height_cm:
-          heightCm,
-      },
-
-      latestWeight,
-
-      bmi,
-
-      currentWeek: {
-        nutrition_days_registered:
-          nutritionDays,
-
-        activity_days_registered:
-          activityDays,
-
-        goals:
-          goalsRes.data ||
-          null,
-      },
-
+      caloriesToday,
+      profile:
+        profileRes.data ||
+        null,
       meals:
         mealsRes.data ||
         [],
-
       activities:
         activitiesRes.data ||
         [],
-
       dailyLogs:
         logsRes.data ||
         [],
-
       weights:
         weightsRes.data ||
         [],
+      goals:
+        goalsRes.data ||
+        null,
     };
 
-    /*
-     * HISTÓRICO DO CHAT
-     *
-     * Mantemos apenas as últimas 4 mensagens
-     * para deixar a resposta mais rápida.
-     */
+    const normalizedMessage =
+      normalizeText(message);
+
+    const asksDailyCalories =
+      (
+        normalizedMessage.includes(
+          "calorias hoje"
+        ) ||
+        normalizedMessage.includes(
+          "calorias de hoje"
+        ) ||
+        (
+          normalizedMessage.includes(
+            "quantas calorias"
+          ) &&
+          normalizedMessage.includes(
+            "hoje"
+          )
+        )
+      );
+
+    if (asksDailyCalories) {
+      if (
+        caloriesToday.mealsCount === 0
+      ) {
+        return NextResponse.json({
+          answer:
+            "Ainda não tenho uma estimativa de calorias salva para as refeições de hoje. Posso calcular quando você registrar os alimentos com as quantidades.",
+          actions: [],
+        });
+      }
+
+      const calorieText =
+        caloriesToday.min ===
+        caloriesToday.max
+          ? `aproximadamente ${caloriesToday.min} kcal`
+          : `aproximadamente ${caloriesToday.min}–${caloriesToday.max} kcal`;
+
+      return NextResponse.json({
+        answer:
+          `Até agora, suas refeições registradas hoje somam ${calorieText}. Esse total é uma estimativa baseada nas porções registradas.`,
+        actions: [],
+      });
+    }
 
     const history =
       Array.isArray(
         body.history
       )
         ? body.history
-            .slice(-4)
+            .slice(-6)
             .map(
-              (item: any) => ({
+              (
+                item: any
+              ) => ({
                 role:
                   item.role ===
                   "assistant"
@@ -1120,121 +2406,54 @@ export async function POST(
             )
         : [];
 
-    /*
-     * PROMPT
-     */
-
     const messages = [
       {
-        role: "system",
+        role:
+          "system",
+
         content:
           SYSTEM_INSTRUCTION,
       },
 
       {
-        role: "system",
+        role:
+          "system",
+
         content: `
-DATA DE HOJE:
+DATA:
 ${today}
 
-INÍCIO DA SEMANA ATUAL:
-${weekStart}
-
-PERFIL DO USUÁRIO:
-
-Nome:
-${
-  context.profile.name ||
-  "Não informado"
-}
-
-Sexo:
-${
-  context.profile.sex ===
-  "male"
-    ? "Masculino"
-    : context.profile.sex ===
-      "female"
-      ? "Feminino"
-      : "Não informado"
-}
-
-Altura:
-${
-  context.profile
-    .height_cm
-    ? `${context.profile.height_cm} cm`
-    : "Não informada"
-}
-
-PESO MAIS RECENTE:
-${
-  latestWeight !==
-  null
-    ? `${latestWeight} kg`
-    : "Não disponível"
-}
-
-IMC CALCULADO:
-${
-  bmi !== null
-    ? bmi
-    : "Não disponível"
-}
-
-PROGRESSO DESTA SEMANA:
-
-Dias com alimentação registrada:
-${nutritionDays}
-
-Dias com atividade física registrada:
-${activityDays}
-
-META ATUAL:
-
-${
-  context.currentWeek
-    .goals
-    ? JSON.stringify(
-        context.currentWeek
-          .goals
-      )
-    : "Nenhuma meta semanal registrada."
-}
-
 REGISTROS RECENTES:
-
 ${JSON.stringify(
   context,
   null,
   2
 )}
 
-REGRAS IMPORTANTES:
+A base nutricional é TACO.
 
-Os registros podem estar incompletos.
+Você não calcula calorias por conta própria.
 
-Nunca invente informações que não aparecem nos dados.
+Quando o usuário perguntar pelo TOTAL DE CALORIAS DE HOJE,
+use exclusivamente context.caloriesToday.
+Nunca invente um total diário.
 
-O IMC é apenas um indicador de referência.
-
-Ao sugerir metas, considere a rotina recente do usuário e prefira mudanças graduais.
-
-Nunca apresente gasto calórico como valor exato.
+Responda somente JSON.
         `,
       },
 
       ...history,
 
       {
-        role: "user",
-        content: message,
+        role:
+          "user",
+
+        content:
+          message,
       },
     ];
 
-    /*
-     * OPENROUTER
-     */
+    /* IA */
 
     const aiResponse =
       await fetch(
@@ -1258,20 +2477,23 @@ Nunca apresente gasto calórico como valor exato.
           },
 
           body:
-            JSON.stringify({
-              model:
-                process.env
-                  .OPENROUTER_MODEL ||
-                "openrouter/free",
+  JSON.stringify({
+    model:
+      process.env.OPENROUTER_MODEL ||
+      "openrouter/free",
 
-              messages,
+    messages,
 
-              temperature:
-                0.3,
+    temperature:
+      0.1,
 
-              max_tokens:
-                550,
-            }),
+    max_tokens:
+      900,
+
+    response_format: {
+      type: "json_object",
+    },
+  }),
         }
       );
 
@@ -1281,21 +2503,12 @@ Nunca apresente gasto calórico como valor exato.
     if (
       !aiResponse.ok
     ) {
-      console.error(
-        "Erro OpenRouter:",
-        result
-      );
-
-      const detail =
-        result?.error
-          ?.message ||
-        result?.message ||
-        "Erro desconhecido.";
-
       return NextResponse.json(
         {
           error:
-            `A Lívia não conseguiu responder: ${detail}`,
+            result?.error
+              ?.message ||
+            "A Lívia não conseguiu responder.",
         },
         {
           status:
@@ -1304,91 +2517,66 @@ Nunca apresente gasto calórico como valor exato.
       );
     }
 
-    const rawAnswer =
+    const raw =
       result?.choices?.[0]
         ?.message?.content;
 
-    if (!rawAnswer) {
-      return NextResponse.json(
-        {
-          error:
-            "A IA respondeu sem conteúdo.",
-        },
-        {
-          status: 500,
-        }
-      );
+    if (
+      !raw ||
+      typeof raw !==
+        "string"
+    ) {
+      return NextResponse.json({
+        answer:
+          "Não consegui processar essa mensagem.",
+        actions: [],
+      });
     }
-
-    /*
-     * INTERPRETAR JSON DA IA
-     */
 
     let liviaData:
       LiviaResponse;
 
     try {
-      const clean =
-        cleanJsonResponse(
-          rawAnswer
-        );
+      const parsed =
+  JSON.parse(
+    cleanJsonResponse(raw)
+  );
 
-      liviaData =
-        JSON.parse(
-          clean
-        );
+liviaData =
+  unwrapLiviaResponse(
+    parsed
+  );
     } catch {
       console.error(
-        "Erro ao interpretar JSON da Lívia:",
-        rawAnswer
+        "JSON inválido:",
+        raw
       );
 
-      return NextResponse.json(
-        {
-          answer:
-            rawAnswer,
-
-          actions: [],
-        }
-      );
+      return NextResponse.json({
+        answer:
+          "Entendi sua mensagem, mas tive um problema ao processá-la. Pode enviar novamente?",
+        actions: [],
+      });
     }
 
-    if (
-      !liviaData ||
-      typeof liviaData.reply !==
-        "string"
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Resposta da Lívia em formato inválido.",
-        },
-        {
-          status: 500,
-        }
-      );
-    }
-
-    const actions =
-      Array.isArray(
-        liviaData.actions
-      )
-        ? liviaData.actions
-        : [];
-
-    const executedActions:
+    const executed:
       string[] = [];
 
-    /*
-     * EXECUTAR AÇÕES
-     */
+    let nutritionText =
+      "";
+
+    let clarificationText =
+      "";
+
+    /* =====================================================
+       AÇÕES
+    ===================================================== */
 
     for (
-      const action of actions
+      const action of
+        liviaData.actions
     ) {
-      /*
-       * REFEIÇÃO
-       */
+      /* REFEIÇÃO */
 
       if (
         action.type ===
@@ -1420,14 +2608,9 @@ Nunca apresente gasto calórico como valor exato.
           continue;
         }
 
-        const {
-          error:
-            mealError,
-        } =
-          await userSupabase
-            .from(
-              "meals"
-            )
+        const insert =
+          await db
+            .from("meals")
             .insert({
               user_id:
                 userId,
@@ -1439,25 +2622,258 @@ Nunca apresente gasto calórico como valor exato.
 
               meal_date:
                 today,
-            });
+            })
+            .select(
+              "id"
+            )
+            .single();
 
         if (
-          mealError
+          insert.error ||
+          !insert.data
         ) {
           console.error(
-            "Erro ao registrar refeição:",
-            mealError
+            "Erro refeição:",
+            insert.error
           );
-        } else {
-          executedActions.push(
-            "meal"
+
+          continue;
+        }
+
+        executed.push(
+          "meal"
+        );
+
+        const foodItems =
+          mergeFoodItemsWithDescription(
+            Array.isArray(
+              action.food_items
+            )
+              ? action.food_items
+              : [],
+            description
           );
+
+        if (
+          foodItems.length
+        ) {
+          const result =
+            await estimateMealNutrition(
+              db,
+              foodItems
+            );
+
+          if (
+            result.estimate
+          ) {
+            const saveEstimate =
+              await db
+                .from(
+                  "meal_nutrition_estimates"
+                )
+                .insert({
+                  user_id:
+                    userId,
+
+                  meal_id:
+                    insert.data.id,
+
+                  original_text:
+                    description,
+
+                  ...result.estimate,
+                });
+
+            if (
+              saveEstimate.error
+            ) {
+              console.error(
+                "Erro ao salvar estimativa nutricional:",
+                saveEstimate.error
+              );
+
+              nutritionText =
+                " A refeição foi registrada, mas não consegui salvar a estimativa de calorias.";
+            } else {
+              executed.push(
+                "nutrition"
+              );
+
+              const mealMin =
+                Math.round(
+                  result.estimate
+                    .kcal_min
+                );
+
+              const mealMax =
+                Math.round(
+                  result.estimate
+                    .kcal_max
+                );
+
+              nutritionText =
+                mealMin ===
+                mealMax
+                  ? ` A estimativa dessa refeição é de aproximadamente ${mealMin} kcal.`
+                  : ` A estimativa dessa refeição ficou entre aproximadamente ${mealMin} e ${mealMax} kcal.`;
+
+              if (
+                result.estimate
+                  .confidence !==
+                "high"
+              ) {
+                nutritionText +=
+                  " É uma estimativa e pode variar conforme o tamanho e o preparo dos alimentos.";
+              }
+
+              const dailyCalories =
+                await getDailyCalories(
+                  db,
+                  userId,
+                  today
+                );
+
+              if (
+                dailyCalories.mealsCount >
+                0
+              ) {
+                nutritionText +=
+                  dailyCalories.min ===
+                  dailyCalories.max
+                    ? ` Total estimado de hoje: aproximadamente ${dailyCalories.min} kcal.`
+                    : ` Total estimado de hoje: aproximadamente ${dailyCalories.min}–${dailyCalories.max} kcal.`;
+              }
+            }
+          }
+
+          if (
+            result.missing.length
+          ) {
+            const missing =
+              result.missing.join(
+                " e "
+              );
+
+            clarificationText =
+              ` Para estimar melhor as calorias, preciso saber a quantidade de ${missing}.`;
+          }
         }
       }
 
-      /*
-       * ÁGUA
-       */
+      /* COMPLETAR ÚLTIMA REFEIÇÃO */
+
+      if (
+        action.type ===
+        "complete_last_meal"
+      ) {
+        const lastMeal =
+          await findLastMealWithoutEstimate(
+            db,
+            userId,
+            today
+          );
+
+        if (
+          !lastMeal
+        ) {
+          clarificationText =
+            " Não encontrei uma refeição recente aguardando estimativa.";
+          continue;
+        }
+
+        const result =
+          await estimateMealNutrition(
+            db,
+            action.food_items ||
+              []
+          );
+
+        if (
+          result.estimate
+        ) {
+          const save =
+            await db
+              .from(
+                "meal_nutrition_estimates"
+              )
+              .insert({
+                user_id:
+                  userId,
+
+                meal_id:
+                  lastMeal.id,
+
+                original_text:
+                  lastMeal.description,
+
+                ...result.estimate,
+              });
+
+          if (
+            save.error
+          ) {
+            console.error(
+              "Erro ao salvar estimativa da refeição:",
+              save.error
+            );
+
+            clarificationText =
+              " Consegui calcular, mas não consegui salvar a estimativa agora.";
+          } else {
+            executed.push(
+              "nutrition"
+            );
+
+            const mealMin =
+              Math.round(
+                result.estimate
+                  .kcal_min
+              );
+
+            const mealMax =
+              Math.round(
+                result.estimate
+                  .kcal_max
+              );
+
+            nutritionText =
+              mealMin ===
+              mealMax
+                ? ` Agora consigo estimar essa refeição em aproximadamente ${mealMin} kcal.`
+                : ` Agora consigo estimar essa refeição entre aproximadamente ${mealMin} e ${mealMax} kcal.`;
+
+            const dailyCalories =
+              await getDailyCalories(
+                db,
+                userId,
+                today
+              );
+
+            if (
+              dailyCalories.mealsCount >
+              0
+            ) {
+              nutritionText +=
+                dailyCalories.min ===
+                dailyCalories.max
+                  ? ` Total estimado de hoje: aproximadamente ${dailyCalories.min} kcal.`
+                  : ` Total estimado de hoje: aproximadamente ${dailyCalories.min}–${dailyCalories.max} kcal.`;
+            }
+          }
+        }
+
+        if (
+          result.missing
+            .length
+        ) {
+          clarificationText =
+            ` Ainda preciso saber a quantidade de ${result.missing.join(
+              " e "
+            )}.`;
+        }
+      }
+
+      /* ÁGUA */
 
       if (
         action.type ===
@@ -1474,19 +2890,13 @@ Nunca apresente gasto calórico como valor exato.
           !Number.isFinite(
             amount
           ) ||
-          amount <= 0 ||
-          amount > 5000
+          amount <= 0
         ) {
           continue;
         }
 
-        const {
-          data:
-            currentDaily,
-          error:
-            dailyError,
-        } =
-          await userSupabase
+        const current =
+          await db
             .from(
               "daily_logs"
             )
@@ -1501,33 +2911,26 @@ Nunca apresente gasto calórico como valor exato.
               "log_date",
               today
             )
+            .order(
+              "updated_at",
+              {
+                ascending:
+                  false,
+              }
+            )
+            .limit(1)
             .maybeSingle();
 
-        if (
-          dailyError
-        ) {
-          console.error(
-            "Erro ao consultar água:",
-            dailyError
-          );
-        }
-
-        const currentWater =
+        const newWater =
           Number(
-            currentDaily
+            current.data
               ?.water_ml ||
               0
-          );
-
-        const newWater =
-          currentWater +
+          ) +
           amount;
 
-        const {
-          error:
-            waterError,
-        } =
-          await userSupabase
+        const save =
+          await db
             .from(
               "daily_logs"
             )
@@ -1553,75 +2956,32 @@ Nunca apresente gasto calórico como valor exato.
             );
 
         if (
-          waterError
+          !save.error
         ) {
-          console.error(
-            "Erro ao registrar água:",
-            waterError
-          );
-        } else {
-          executedActions.push(
+          executed.push(
             "water"
           );
         }
       }
 
-      /*
-       * ATIVIDADE FÍSICA
-       */
+      /* ATIVIDADE */
 
       if (
         action.type ===
         "add_activity"
       ) {
-        const activityName =
+        const name =
           String(
             action.name ||
               ""
-          )
-            .trim()
-            .slice(
-              0,
-              120
-            );
+          ).trim();
 
-        const duration =
-          action.duration_minutes ===
-            null ||
-          action.duration_minutes ===
-            undefined
-            ? null
-            : Math.round(
-                Number(
-                  action.duration_minutes
-                )
-              );
-
-        if (
-          !activityName
-        ) {
+        if (!name) {
           continue;
         }
 
-        if (
-          duration !==
-            null &&
-          (
-            !Number.isFinite(
-              duration
-            ) ||
-            duration <= 0 ||
-            duration > 1440
-          )
-        ) {
-          continue;
-        }
-
-        const {
-          error:
-            activityError,
-        } =
-          await userSupabase
+        const save =
+          await db
             .from(
               "activities"
             )
@@ -1629,33 +2989,26 @@ Nunca apresente gasto calórico como valor exato.
               user_id:
                 userId,
 
-              name:
-                activityName,
+              name,
 
               duration_minutes:
-                duration,
+                action.duration_minutes ??
+                null,
 
               activity_date:
                 today,
             });
 
         if (
-          activityError
+          !save.error
         ) {
-          console.error(
-            "Erro ao registrar atividade:",
-            activityError
-          );
-        } else {
-          executedActions.push(
+          executed.push(
             "activity"
           );
         }
       }
 
-      /*
-       * PESO
-       */
+      /* PESO */
 
       if (
         action.type ===
@@ -1669,18 +3022,13 @@ Nunca apresente gasto calórico como valor exato.
         if (
           !Number.isFinite(
             weight
-          ) ||
-          weight < 20 ||
-          weight > 500
+          )
         ) {
           continue;
         }
 
-        const {
-          error:
-            weightError,
-        } =
-          await userSupabase
+        const save =
+          await db
             .from(
               "weight_entries"
             )
@@ -1695,82 +3043,43 @@ Nunca apresente gasto calórico como valor exato.
             });
 
         if (
-          weightError
+          !save.error
         ) {
-          console.error(
-            "Erro ao registrar peso:",
-            weightError
-          );
-        } else {
-          executedActions.push(
+          executed.push(
             "weight"
           );
         }
       }
 
-      /*
-       * METAS SEMANAIS
-       */
+      /* METAS */
 
       if (
         action.type ===
         "set_weekly_goals"
       ) {
-        const nutritionTarget =
-          Math.round(
-            Number(
-              action.nutrition_days_target
-            )
+        const n =
+          Number(
+            action
+              .nutrition_days_target
           );
 
-        const activityTarget =
-          Math.round(
-            Number(
-              action.activity_days_target
-            )
+        const a =
+          Number(
+            action
+              .activity_days_target
           );
 
         if (
-          !Number.isFinite(
-            nutritionTarget
-          ) ||
-          nutritionTarget <
-            1 ||
-          nutritionTarget >
-            7
+          n < 1 ||
+          n > 7 ||
+          a < 1 ||
+          a > 7
         ) {
           continue;
         }
 
-        if (
-          !Number.isFinite(
-            activityTarget
-          ) ||
-          activityTarget <
-            1 ||
-          activityTarget >
-            7
-        ) {
-          continue;
-        }
-
-        const notes =
-          action.notes
-            ? String(
-                action.notes
-              )
-                .trim()
-                .slice(
-                  0,
-                  500
-                )
-            : null;
-
-        const {
-          error:
-            goalError,
-        } =
-          await userSupabase
+        const save =
+          await db
             .from(
               "weekly_goals"
             )
@@ -1783,12 +3092,14 @@ Nunca apresente gasto calórico como valor exato.
                   weekStart,
 
                 nutrition_days_target:
-                  nutritionTarget,
+                  n,
 
                 activity_days_target:
-                  activityTarget,
+                  a,
 
-                notes,
+                notes:
+                  action.notes ||
+                  null,
 
                 updated_at:
                   new Date()
@@ -1801,53 +3112,85 @@ Nunca apresente gasto calórico como valor exato.
             );
 
         if (
-          goalError
+          !save.error
         ) {
-          console.error(
-            "Erro ao registrar metas:",
-            goalError
-          );
-        } else {
-          executedActions.push(
+          executed.push(
             "weekly_goals"
           );
         }
       }
     }
 
-    /*
-     * RESPOSTA
-     */
+    /* =====================================================
+       RESPOSTA FINAL
+    ===================================================== */
 
-    return NextResponse.json(
-      {
-        answer:
-          liviaData.reply,
+    let finalReply =
+      String(
+        liviaData.reply ||
+          ""
+      ).trim();
 
-        actions:
-          executedActions,
-      }
-    );
+    if (
+      executed.includes(
+        "meal"
+      )
+    ) {
+      finalReply =
+        `Registrei sua refeição.${nutritionText}${clarificationText}`;
+    } else if (
+      executed.includes(
+        "nutrition"
+      )
+    ) {
+      finalReply =
+        `Perfeito.${nutritionText}${clarificationText}`;
+    } else if (
+      executed.includes(
+        "water"
+      )
+    ) {
+      finalReply =
+        `Registrei sua hidratação. ${finalReply}`;
+    } else if (
+      executed.includes(
+        "activity"
+      )
+    ) {
+      finalReply =
+        `Registrei sua atividade. ${finalReply}`;
+    } else if (
+      executed.includes(
+        "weight"
+      )
+    ) {
+      finalReply =
+        `Registrei seu peso. ${finalReply}`;
+    }
+
+    return NextResponse.json({
+      answer:
+        finalReply.trim(),
+
+      actions:
+        executed,
+    });
   } catch (
-    error: unknown
+    error
   ) {
     console.error(
       "ERRO LÍVIA:",
       error
     );
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Erro interno ao consultar a IA.";
-
     return NextResponse.json(
       {
         error:
-          message,
+          "Erro interno ao consultar a Lívia.",
       },
       {
-        status: 500,
+        status:
+          500,
       }
     );
   }

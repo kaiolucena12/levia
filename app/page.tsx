@@ -25,10 +25,15 @@ import {
   Activity as ActivityIcon,
   ArrowDownRight,
   Droplets,
+  Flame,
   Plus,
   Target,
   Utensils,
 } from "lucide-react";
+
+/* =========================================================
+   DATA DE HOJE - RECIFE
+========================================================= */
 
 function todayBrazil() {
   return new Intl.DateTimeFormat(
@@ -42,50 +47,72 @@ function todayBrazil() {
   ).format(new Date());
 }
 
-function getWeekStart() {
-  const now = new Date();
+/* =========================================================
+   INÍCIO DA SEMANA
+========================================================= */
 
-  const brazilDate =
+function getWeekStart() {
+  const today =
+    todayBrazil();
+
+  const [
+    year,
+    month,
+    day,
+  ] =
+    today
+      .split("-")
+      .map(Number);
+
+  const date =
     new Date(
-      new Intl.DateTimeFormat(
-        "en-US",
-        {
-          timeZone: "America/Recife",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        }
-      ).format(now)
+      year,
+      month - 1,
+      day,
+      12,
+      0,
+      0
     );
 
-  const day =
-    brazilDate.getDay();
+  const weekday =
+    date.getDay();
 
   const difference =
-    day === 0
+    weekday === 0
       ? -6
-      : 1 - day;
+      : 1 - weekday;
 
-  brazilDate.setDate(
-    brazilDate.getDate() +
+  date.setDate(
+    date.getDate() +
       difference
   );
 
-  const year =
-    brazilDate.getFullYear();
+  const newYear =
+    date.getFullYear();
 
-  const month =
+  const newMonth =
     String(
-      brazilDate.getMonth() + 1
-    ).padStart(2, "0");
+      date.getMonth() +
+        1
+    ).padStart(
+      2,
+      "0"
+    );
 
-  const date =
+  const newDay =
     String(
-      brazilDate.getDate()
-    ).padStart(2, "0");
+      date.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
 
-  return `${year}-${month}-${date}`;
+  return `${newYear}-${newMonth}-${newDay}`;
 }
+
+/* =========================================================
+   IMC
+========================================================= */
 
 function getBMI(
   weight?: number,
@@ -110,7 +137,10 @@ function getBMI(
   return Number(
     (
       Number(weight) /
-      (heightM * heightM)
+      (
+        heightM *
+        heightM
+      )
     ).toFixed(1)
   );
 }
@@ -118,24 +148,36 @@ function getBMI(
 function getBMIText(
   bmi: number | null
 ) {
-  if (bmi === null) {
+  if (
+    bmi === null
+  ) {
     return "Complete altura e peso";
   }
 
-  if (bmi < 18.5) {
+  if (
+    bmi < 18.5
+  ) {
     return "Abaixo da faixa de referência";
   }
 
-  if (bmi < 25) {
+  if (
+    bmi < 25
+  ) {
     return "Faixa de referência";
   }
 
-  if (bmi < 30) {
+  if (
+    bmi < 30
+  ) {
     return "Acima da faixa de referência";
   }
 
   return "Acima da faixa de referência";
 }
+
+/* =========================================================
+   TIPOS
+========================================================= */
 
 type Profile = {
   name: string | null;
@@ -149,251 +191,802 @@ type WeeklyGoal = {
   notes: string | null;
 };
 
+type CaloriesToday = {
+  min: number;
+  max: number;
+  mealsCount: number;
+};
+
+type NutritionEstimateRow = {
+  id: string;
+  meal_id: string | null;
+  kcal_min:
+    | number
+    | string
+    | null;
+  kcal_max:
+    | number
+    | string
+    | null;
+  created_at?: string;
+
+  meals?:
+    | {
+        meal_date?: string;
+        user_id?: string;
+      }
+    | {
+        meal_date?: string;
+        user_id?: string;
+      }[]
+    | null;
+};
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
 export default function DashboardPage() {
-  const [name, setName] =
-    useState("você");
+  const [
+    name,
+    setName,
+  ] =
+    useState(
+      "você"
+    );
 
-  const [weights, setWeights] =
-    useState<WeightEntry[]>([]);
+  const [
+    weights,
+    setWeights,
+  ] =
+    useState<
+      WeightEntry[]
+    >([]);
 
-  const [meals, setMeals] =
-    useState<Meal[]>([]);
+  const [
+    meals,
+    setMeals,
+  ] =
+    useState<
+      Meal[]
+    >([]);
 
   const [
     weekMeals,
     setWeekMeals,
-  ] = useState<Meal[]>([]);
+  ] =
+    useState<
+      Meal[]
+    >([]);
 
   const [
     activities,
     setActivities,
   ] =
-    useState<Activity[]>([]);
+    useState<
+      Activity[]
+    >([]);
 
   const [
     weekActivities,
     setWeekActivities,
   ] =
-    useState<Activity[]>([]);
+    useState<
+      Activity[]
+    >([]);
 
-  const [daily, setDaily] =
-    useState<DailyLog | null>(
-      null
-    );
+  const [
+    daily,
+    setDaily,
+  ] =
+    useState<
+      DailyLog | null
+    >(null);
 
   const [
     profile,
     setProfile,
   ] =
-    useState<Profile | null>(
-      null
-    );
+    useState<
+      Profile | null
+    >(null);
 
   const [
     goals,
     setGoals,
   ] =
-    useState<WeeklyGoal | null>(
-      null
+    useState<
+      WeeklyGoal | null
+    >(null);
+
+  const [
+    todayCalories,
+    setTodayCalories,
+  ] =
+    useState<
+      CaloriesToday | null
+    >(null);
+
+  const [
+    loading,
+    setLoading,
+  ] =
+    useState(
+      true
     );
 
-  const [loading, setLoading] =
-    useState(true);
+  /* =======================================================
+     CARREGAR DADOS
+  ======================================================= */
 
   const load =
-    useCallback(async () => {
-      const {
-        data: auth,
-      } =
-        await supabase.auth.getUser();
+    useCallback(
+      async (
+        showLoading =
+          false
+      ) => {
+        if (
+          showLoading
+        ) {
+          setLoading(
+            true
+          );
+        }
 
-      if (!auth.user) {
-        return;
-      }
+        try {
+          const {
+            data:
+              auth,
+            error:
+              authError,
+          } =
+            await supabase.auth.getUser();
 
-      const today =
-        todayBrazil();
+          if (
+            authError ||
+            !auth.user
+          ) {
+            setLoading(
+              false
+            );
 
-      const weekStart =
-        getWeekStart();
+            return;
+          }
 
-      setName(
-        auth.user.user_metadata
-          ?.name ||
-          auth.user.email?.split(
-            "@"
-          )[0] ||
-          "você"
-      );
+          const userId =
+            auth.user.id;
 
-      const [
-        weightsRes,
-        mealsRes,
-        weekMealsRes,
-        activitiesRes,
-        weekActivitiesRes,
-        dailyRes,
-        profileRes,
-        goalsRes,
-      ] =
-        await Promise.all([
-          supabase
-            .from(
-              "weight_entries"
-            )
-            .select("*")
-            .order(
-              "recorded_at",
-              {
-                ascending:
-                  false,
+          const today =
+            todayBrazil();
+
+          const weekStart =
+            getWeekStart();
+
+          setName(
+            auth.user
+              .user_metadata
+              ?.name ||
+              auth.user.email?.split(
+                "@"
+              )[0] ||
+              "você"
+          );
+
+          const [
+            weightsRes,
+            mealsRes,
+            weekMealsRes,
+            activitiesRes,
+            weekActivitiesRes,
+            dailyRes,
+            profileRes,
+            goalsRes,
+            caloriesRes,
+          ] =
+            await Promise.all([
+              /* PESOS */
+
+              supabase
+                .from(
+                  "weight_entries"
+                )
+                .select(
+                  "*"
+                )
+                .eq(
+                  "user_id",
+                  userId
+                )
+                .order(
+                  "recorded_at",
+                  {
+                    ascending:
+                      false,
+                  }
+                )
+                .limit(
+                  30
+                ),
+
+              /* REFEIÇÕES DE HOJE */
+
+              supabase
+                .from(
+                  "meals"
+                )
+                .select(
+                  "*"
+                )
+                .eq(
+                  "user_id",
+                  userId
+                )
+                .eq(
+                  "meal_date",
+                  today
+                )
+                .order(
+                  "created_at",
+                  {
+                    ascending:
+                      true,
+                  }
+                ),
+
+              /* REFEIÇÕES DA SEMANA */
+
+              supabase
+                .from(
+                  "meals"
+                )
+                .select(
+                  "*"
+                )
+                .eq(
+                  "user_id",
+                  userId
+                )
+                .gte(
+                  "meal_date",
+                  weekStart
+                )
+                .lte(
+                  "meal_date",
+                  today
+                ),
+
+              /* ATIVIDADES DE HOJE */
+
+              supabase
+                .from(
+                  "activities"
+                )
+                .select(
+                  "*"
+                )
+                .eq(
+                  "user_id",
+                  userId
+                )
+                .eq(
+                  "activity_date",
+                  today
+                )
+                .order(
+                  "created_at",
+                  {
+                    ascending:
+                      true,
+                  }
+                ),
+
+              /* ATIVIDADES DA SEMANA */
+
+              supabase
+                .from(
+                  "activities"
+                )
+                .select(
+                  "*"
+                )
+                .eq(
+                  "user_id",
+                  userId
+                )
+                .gte(
+                  "activity_date",
+                  weekStart
+                )
+                .lte(
+                  "activity_date",
+                  today
+                ),
+
+              /* HÁBITOS */
+
+              supabase
+                .from(
+                  "daily_logs"
+                )
+                .select(
+                  "*"
+                )
+                .eq(
+                  "user_id",
+                  userId
+                )
+                .eq(
+                  "log_date",
+                  today
+                )
+                .order(
+                  "updated_at",
+                  {
+                    ascending:
+                      false,
+                  }
+                )
+                .limit(
+                  1
+                )
+                .maybeSingle(),
+
+              /* PERFIL */
+
+              supabase
+                .from(
+                  "profiles"
+                )
+                .select(
+                  "name,sex,height_cm"
+                )
+                .eq(
+                  "id",
+                  userId
+                )
+                .maybeSingle(),
+
+              /* METAS */
+
+              supabase
+                .from(
+                  "weekly_goals"
+                )
+                .select(
+                  "nutrition_days_target,activity_days_target,notes"
+                )
+                .eq(
+                  "user_id",
+                  userId
+                )
+                .eq(
+                  "week_start",
+                  weekStart
+                )
+                .maybeSingle(),
+
+              /* CALORIAS */
+
+              supabase
+                .from(
+                  "meal_nutrition_estimates"
+                )
+                .select(`
+                  id,
+                  meal_id,
+                  kcal_min,
+                  kcal_max,
+                  created_at,
+                  meals!inner (
+                    meal_date,
+                    user_id
+                  )
+                `)
+                .eq(
+                  "user_id",
+                  userId
+                )
+                .eq(
+                  "meals.user_id",
+                  userId
+                )
+                .eq(
+                  "meals.meal_date",
+                  today
+                )
+                .order(
+                  "created_at",
+                  {
+                    ascending:
+                      false,
+                  }
+                ),
+            ]);
+
+          /* =================================================
+             ERROS
+          ================================================= */
+
+          if (
+            weightsRes.error
+          ) {
+            console.error(
+              "Erro ao carregar pesos:",
+              weightsRes.error
+            );
+          }
+
+          if (
+            mealsRes.error
+          ) {
+            console.error(
+              "Erro ao carregar refeições:",
+              mealsRes.error
+            );
+          }
+
+          if (
+            weekMealsRes.error
+          ) {
+            console.error(
+              "Erro ao carregar refeições da semana:",
+              weekMealsRes.error
+            );
+          }
+
+          if (
+            activitiesRes.error
+          ) {
+            console.error(
+              "Erro ao carregar atividades:",
+              activitiesRes.error
+            );
+          }
+
+          if (
+            weekActivitiesRes.error
+          ) {
+            console.error(
+              "Erro ao carregar atividades da semana:",
+              weekActivitiesRes.error
+            );
+          }
+
+          if (
+            dailyRes.error
+          ) {
+            console.error(
+              "Erro ao carregar hábitos:",
+              JSON.stringify(
+                dailyRes.error,
+                null,
+                2
+              )
+            );
+          }
+
+          if (
+            profileRes.error
+          ) {
+            console.error(
+              "Erro ao carregar perfil:",
+              profileRes.error
+            );
+          }
+
+          if (
+            goalsRes.error
+          ) {
+            console.error(
+              "Erro ao carregar metas:",
+              goalsRes.error
+            );
+          }
+
+          if (
+            caloriesRes.error
+          ) {
+            console.error(
+              "Erro ao carregar calorias:",
+              JSON.stringify(
+                caloriesRes.error,
+                null,
+                2
+              )
+            );
+          }
+
+          /* =================================================
+             ESTADOS
+          ================================================= */
+
+          setWeights(
+            weightsRes.data ||
+              []
+          );
+
+          setMeals(
+            mealsRes.data ||
+              []
+          );
+
+          setWeekMeals(
+            weekMealsRes.data ||
+              []
+          );
+
+          setActivities(
+            activitiesRes.data ||
+              []
+          );
+
+          setWeekActivities(
+            weekActivitiesRes.data ||
+              []
+          );
+
+          setDaily(
+            dailyRes.data ||
+              null
+          );
+
+          setProfile(
+            profileRes.data ||
+              null
+          );
+
+          setGoals(
+            goalsRes.data ||
+              null
+          );
+
+          /* =================================================
+             CALORIAS DO DIA
+          ================================================= */
+
+          if (
+            caloriesRes.error
+          ) {
+            setTodayCalories(
+              null
+            );
+          } else {
+            const calorieRows =
+              (
+                caloriesRes.data ||
+                []
+              ) as unknown as NutritionEstimateRow[];
+
+            /*
+             * Só usa a estimativa mais recente
+             * de cada refeição.
+             */
+            const uniqueMeals =
+              new Map<
+                string,
+                NutritionEstimateRow
+              >();
+
+            for (
+              const row of calorieRows
+            ) {
+              const key =
+                row.meal_id ||
+                row.id;
+
+              if (
+                !uniqueMeals.has(
+                  key
+                )
+              ) {
+                uniqueMeals.set(
+                  key,
+                  row
+                );
               }
-            )
-            .limit(30),
+            }
 
-          supabase
-            .from("meals")
-            .select("*")
-            .eq(
-              "meal_date",
-              today
-            )
-            .order(
-              "created_at",
-              {
-                ascending: true,
-              }
-            ),
+            const finalRows =
+              Array.from(
+                uniqueMeals.values()
+              );
 
-          supabase
-            .from("meals")
-            .select("*")
-            .gte(
-              "meal_date",
-              weekStart
-            )
-            .lte(
-              "meal_date",
-              today
-            ),
+            if (
+              finalRows.length ===
+              0
+            ) {
+              setTodayCalories(
+                null
+              );
+            } else {
+              const totalMin =
+                finalRows.reduce(
+                  (
+                    sum,
+                    item
+                  ) => {
+                    const value =
+                      Number(
+                        item.kcal_min
+                      );
 
-          supabase
-            .from(
-              "activities"
-            )
-            .select("*")
-            .eq(
-              "activity_date",
-              today
-            )
-            .order(
-              "created_at",
-              {
-                ascending: true,
-              }
-            ),
+                    return (
+                      sum +
+                      (
+                        Number.isFinite(
+                          value
+                        )
+                          ? value
+                          : 0
+                      )
+                    );
+                  },
+                  0
+                );
 
-          supabase
-            .from(
-              "activities"
-            )
-            .select("*")
-            .gte(
-              "activity_date",
-              weekStart
-            )
-            .lte(
-              "activity_date",
-              today
-            ),
+              const totalMax =
+                finalRows.reduce(
+                  (
+                    sum,
+                    item
+                  ) => {
+                    const value =
+                      Number(
+                        item.kcal_max
+                      );
 
-          supabase
-            .from(
-              "daily_logs"
-            )
-            .select("*")
-            .eq(
-              "log_date",
-              today
-            )
-            .maybeSingle(),
+                    return (
+                      sum +
+                      (
+                        Number.isFinite(
+                          value
+                        )
+                          ? value
+                          : 0
+                      )
+                    );
+                  },
+                  0
+                );
 
-          supabase
-            .from("profiles")
-            .select(
-              "name,sex,height_cm"
-            )
-            .eq(
-              "id",
-              auth.user.id
-            )
-            .maybeSingle(),
+              setTodayCalories(
+                {
+                  min:
+                    Math.round(
+                      totalMin
+                    ),
 
-          supabase
-            .from(
-              "weekly_goals"
-            )
-            .select(
-              "nutrition_days_target,activity_days_target,notes"
-            )
-            .eq(
-              "week_start",
-              weekStart
-            )
-            .maybeSingle(),
-        ]);
+                  max:
+                    Math.round(
+                      totalMax
+                    ),
 
-      setWeights(
-        weightsRes.data || []
-      );
+                  mealsCount:
+                    finalRows.length,
+                }
+              );
+            }
+          }
+        } catch (
+          error
+        ) {
+          console.error(
+            "Erro ao carregar dashboard:",
+            error
+          );
+        } finally {
+          setLoading(
+            false
+          );
+        }
+      },
+      []
+    );
 
-      setMeals(
-        mealsRes.data || []
-      );
-
-      setWeekMeals(
-        weekMealsRes.data ||
-          []
-      );
-
-      setActivities(
-        activitiesRes.data ||
-          []
-      );
-
-      setWeekActivities(
-        weekActivitiesRes.data ||
-          []
-      );
-
-      setDaily(
-        dailyRes.data ||
-          null
-      );
-
-      setProfile(
-        profileRes.data ||
-          null
-      );
-
-      setGoals(
-        goalsRes.data ||
-          null
-      );
-
-      setLoading(false);
-    }, []);
+  /* =======================================================
+     CARREGAMENTO INICIAL
+  ======================================================= */
 
   useEffect(() => {
-    load();
+    load(true);
   }, [load]);
 
+  /* =======================================================
+     ATUALIZA QUANDO LÍVIA SALVAR
+  ======================================================= */
+
+  useEffect(() => {
+    function handleLiviaUpdate(
+      event: Event
+    ) {
+      const customEvent =
+        event as CustomEvent<{
+          actions?: string[];
+        }>;
+
+      const actions =
+        customEvent.detail
+          ?.actions ||
+        [];
+
+      const relevantActions =
+        [
+          "meal",
+          "nutrition",
+          "water",
+          "weight",
+          "activity",
+          "weekly_goals",
+        ];
+
+      if (
+        actions.length ===
+          0 ||
+        actions.some(
+          (
+            action
+          ) =>
+            relevantActions.includes(
+              action
+            )
+        )
+      ) {
+        load();
+      }
+    }
+
+    window.addEventListener(
+      "levia:data-updated",
+      handleLiviaUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "levia:data-updated",
+        handleLiviaUpdate
+      );
+    };
+  }, [load]);
+
+  /* =======================================================
+     ATUALIZA AO VOLTAR PARA A ABA
+  ======================================================= */
+
+  useEffect(() => {
+    function handleVisibility() {
+      if (
+        document.visibilityState ===
+        "visible"
+      ) {
+        load();
+      }
+    }
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibility
+    );
+
+    return () => {
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibility
+      );
+    };
+  }, [load]);
+
+  /* =======================================================
+     PESO
+  ======================================================= */
+
   const currentWeight =
-    weights[0]?.weight;
+    weights[0]
+      ?.weight;
 
   const oldestWeight =
     weights[
-      weights.length - 1
+      weights.length -
+        1
     ]?.weight;
 
   const difference =
@@ -407,9 +1000,15 @@ export default function DashboardPage() {
             Number(
               oldestWeight
             )
-          ).toFixed(1)
+          ).toFixed(
+            1
+          )
         )
       : null;
+
+  /* =======================================================
+     IMC
+  ======================================================= */
 
   const bmi =
     getBMI(
@@ -423,25 +1022,43 @@ export default function DashboardPage() {
         undefined
     );
 
+  /* =======================================================
+     METAS
+  ======================================================= */
+
   const nutritionDays =
-    useMemo(() => {
-      return new Set(
-        weekMeals.map(
-          (item) =>
-            item.meal_date
-        )
-      ).size;
-    }, [weekMeals]);
+    useMemo(
+      () => {
+        return new Set(
+          weekMeals.map(
+            (
+              item
+            ) =>
+              item.meal_date
+          )
+        ).size;
+      },
+      [
+        weekMeals,
+      ]
+    );
 
   const activityDays =
-    useMemo(() => {
-      return new Set(
-        weekActivities.map(
-          (item) =>
-            item.activity_date
-        )
-      ).size;
-    }, [weekActivities]);
+    useMemo(
+      () => {
+        return new Set(
+          weekActivities.map(
+            (
+              item
+            ) =>
+              item.activity_date
+          )
+        ).size;
+      },
+      [
+        weekActivities,
+      ]
+    );
 
   const nutritionTarget =
     goals
@@ -453,10 +1070,16 @@ export default function DashboardPage() {
       ?.activity_days_target ||
     3;
 
+  /* =======================================================
+     TELA
+  ======================================================= */
+
   return (
     <AuthGuard>
       <AppShell>
         <div className="page">
+          {/* CABEÇALHO */}
+
           <header className="page-header">
             <div>
               <span className="eyebrow">
@@ -468,9 +1091,9 @@ export default function DashboardPage() {
               </h1>
 
               <p>
-                Um dia de cada vez.
-                Veja como está sua
-                rotina.
+                Um dia de cada
+                vez. Veja como
+                está sua rotina.
               </p>
             </div>
 
@@ -478,7 +1101,11 @@ export default function DashboardPage() {
               className="primary-button inline-button"
               href="/diario"
             >
-              <Plus size={18} />
+              <Plus
+                size={
+                  18
+                }
+              />
 
               Registrar agora
             </Link>
@@ -491,7 +1118,13 @@ export default function DashboardPage() {
             </div>
           ) : (
             <>
+              {/* =============================================
+                  CARDS PRINCIPAIS
+              ============================================= */}
+
               <section className="stats-grid dashboard-stats-three">
+                {/* PESO */}
+
                 <div className="stat-card featured">
                   <span className="stat-label">
                     Peso atual
@@ -532,10 +1165,14 @@ export default function DashboardPage() {
                   </small>
                 </div>
 
+                {/* ÁGUA */}
+
                 <div className="stat-card">
                   <div className="stat-icon">
                     <Droplets
-                      size={20}
+                      size={
+                        20
+                      }
                     />
                   </div>
 
@@ -546,7 +1183,9 @@ export default function DashboardPage() {
                   <strong>
                     {daily?.water_ml
                       ? `${(
-                          daily.water_ml /
+                          Number(
+                            daily.water_ml
+                          ) /
                           1000
                         ).toFixed(
                           1
@@ -555,14 +1194,19 @@ export default function DashboardPage() {
                   </strong>
 
                   <small>
-                    registrados hoje
+                    registrados
+                    hoje
                   </small>
                 </div>
+
+                {/* IMC */}
 
                 <div className="stat-card">
                   <div className="stat-icon">
                     <Target
-                      size={20}
+                      size={
+                        20
+                      }
                     />
                   </div>
 
@@ -581,17 +1225,60 @@ export default function DashboardPage() {
                     )}
                   </small>
                 </div>
+
+                {/* CALORIAS */}
+
+                <div className="stat-card">
+                  <div className="stat-icon">
+                    <Flame
+                      size={
+                        20
+                      }
+                    />
+                  </div>
+
+                  <span className="stat-label">
+                    Calorias estimadas
+                    hoje
+                  </span>
+
+                  <strong>
+                    {todayCalories
+                      ? todayCalories.min ===
+                        todayCalories.max
+                        ? `~ ${todayCalories.min} kcal`
+                        : `${todayCalories.min}–${todayCalories.max} kcal`
+                      : "—"}
+                  </strong>
+
+                  <small>
+                    {todayCalories
+                      ? `${todayCalories.mealsCount} ${
+                          todayCalories.mealsCount ===
+                          1
+                            ? "refeição calculada"
+                            : "refeições calculadas"
+                        }`
+                      : "nenhuma estimativa disponível"}
+                  </small>
+                </div>
               </section>
+
+              {/* =============================================
+                  METAS
+              ============================================= */}
 
               <section className="card goals-card">
                 <div className="card-heading">
                   <div>
                     <span className="eyebrow">
-                      METAS DA SEMANA
+                      METAS DA
+                      SEMANA
                     </span>
 
                     <h2>
-                      Seu plano semanal
+                      Seu plano
+                      semanal
                     </h2>
                   </div>
 
@@ -605,10 +1292,14 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="goal-grid">
+                  {/* ALIMENTAÇÃO */}
+
                   <div className="goal-item">
                     <div className="goal-icon">
                       <Utensils
-                        size={20}
+                        size={
+                          20
+                        }
                       />
                     </div>
 
@@ -633,8 +1324,10 @@ export default function DashboardPage() {
                           style={{
                             width: `${Math.min(
                               100,
-                              (nutritionDays /
-                                nutritionTarget) *
+                              (
+                                nutritionDays /
+                                nutritionTarget
+                              ) *
                                 100
                             )}%`,
                           }}
@@ -643,10 +1336,14 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
+                  {/* ATIVIDADE */}
+
                   <div className="goal-item">
                     <div className="goal-icon">
                       <ActivityIcon
-                        size={20}
+                        size={
+                          20
+                        }
                       />
                     </div>
 
@@ -672,8 +1369,10 @@ export default function DashboardPage() {
                           style={{
                             width: `${Math.min(
                               100,
-                              (activityDays /
-                                activityTarget) *
+                              (
+                                activityDays /
+                                activityTarget
+                              ) *
                                 100
                             )}%`,
                           }}
@@ -685,12 +1384,20 @@ export default function DashboardPage() {
 
                 {goals?.notes && (
                   <p className="goal-note">
-                    {goals.notes}
+                    {
+                      goals.notes
+                    }
                   </p>
                 )}
               </section>
 
+              {/* =============================================
+                  REFEIÇÕES E ATIVIDADES
+              ============================================= */}
+
               <section className="dashboard-grid dashboard-grid-two">
+                {/* REFEIÇÕES */}
+
                 <div className="card">
                   <div className="card-heading">
                     <div>
@@ -699,7 +1406,8 @@ export default function DashboardPage() {
                       </span>
 
                       <h2>
-                        Refeições de hoje
+                        Refeições
+                        de hoje
                       </h2>
                     </div>
 
@@ -715,18 +1423,24 @@ export default function DashboardPage() {
                   0 ? (
                     <div className="empty-state">
                       <Utensils
-                        size={26}
+                        size={
+                          26
+                        }
                       />
 
                       <p>
-                        Nenhuma refeição
-                        registrada hoje.
+                        Nenhuma
+                        refeição
+                        registrada
+                        hoje.
                       </p>
                     </div>
                   ) : (
                     <div className="timeline-list">
                       {meals.map(
-                        (meal) => (
+                        (
+                          meal
+                        ) => (
                           <div
                             className="timeline-item"
                             key={
@@ -755,6 +1469,8 @@ export default function DashboardPage() {
                   )}
                 </div>
 
+                {/* ATIVIDADES */}
+
                 <div className="card">
                   <div className="card-heading">
                     <div>
@@ -763,8 +1479,8 @@ export default function DashboardPage() {
                       </span>
 
                       <h2>
-                        Atividades de
-                        hoje
+                        Atividades
+                        de hoje
                       </h2>
                     </div>
 
@@ -780,12 +1496,16 @@ export default function DashboardPage() {
                   0 ? (
                     <div className="empty-state">
                       <ActivityIcon
-                        size={26}
+                        size={
+                          26
+                        }
                       />
 
                       <p>
-                        Nenhuma atividade
-                        registrada hoje.
+                        Nenhuma
+                        atividade
+                        registrada
+                        hoje.
                       </p>
                     </div>
                   ) : (
