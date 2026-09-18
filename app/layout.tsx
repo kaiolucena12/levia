@@ -1,10 +1,6 @@
-import type { Metadata } from "next";
 import "./globals.css";
-
-export const metadata: Metadata = {
-  title: "Levia",
-  description: "Seu acompanhamento inteligente de hábitos e evolução."
-};
+import AppShell from "@/components/AppShell";
+import AuthGuard from "@/components/AuthGuard";
 
 export default function RootLayout({
   children,
@@ -13,7 +9,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        <AuthGuard>
+          <AppShell>
+            {children}
+          </AppShell>
+        </AuthGuard>
+      </body>
     </html>
   );
 }

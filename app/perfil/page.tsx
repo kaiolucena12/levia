@@ -1,39 +1,39 @@
 "use client";
 
-import {
-  FormEvent,
-  useEffect,
-  useState,
-} from "react";
-
-import AuthGuard from "@/components/AuthGuard";
-import AppShell from "@/components/AppShell";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+import {
+  UserRound,
+  Mail,
+  Ruler,
+  Scale,
+  Save,
+  CheckCircle2,
+  CalendarDays,
+  ShieldCheck,
+} from "lucide-react";
+
+type ProfileData = {
+  sex: string | null;
+  height_cm: number | null;
+};
+
 export default function PerfilPage() {
-  const [userId, setUserId] =
-    useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
-  const [name, setName] =
-    useState("");
+  const [userId, setUserId] = useState("");
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("Usuário");
+  const [createdAt, setCreatedAt] = useState<string | null>(null);
 
-  const [sex, setSex] =
-    useState("");
+  const [sex, setSex] = useState("");
+  const [height, setHeight] = useState("");
 
-  const [height, setHeight] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [saving, setSaving] =
-    useState(false);
-
-  const [message, setMessage] =
-    useState("");
-
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [currentWeight, setCurrentWeight] = useState<number | null>(null);
+  const [weightRecords, setWeightRecords] = useState(0);
 
   useEffect(() => {
     loadProfile();
@@ -41,134 +41,68 @@ export default function PerfilPage() {
 
   async function loadProfile() {
     setLoading(true);
-    setErrorMessage("");
 
     const {
-      data: authData,
-      error: authError,
+      data: { user },
     } = await supabase.auth.getUser();
 
-    if (
-      authError ||
-      !authData.user
-    ) {
-      setErrorMessage(
-        "Não foi possível identificar o usuário."
-      );
-
+    if (!user) {
       setLoading(false);
       return;
     }
 
-    const user =
-      authData.user;
-
     setUserId(user.id);
+    setEmail(user.email || "");
+    setCreatedAt(user.created_at || null);
 
-    const {
-      data: profile,
-      error: profileError,
-    } = await supabase
+    const userName =
+      user.user_metadata?.full_name ||
+      user.user_metadata?.name ||
+      user.email?.split("@")[0] ||
+      "Usuário";
+
+    setName(userName);
+
+    const { data: profile } = await supabase
       .from("profiles")
-      .select(
-        "name,sex,height_cm"
-      )
+      .select("sex,height_cm")
       .eq("id", user.id)
-      .maybeSingle();
+      .maybeSingle<ProfileData>();
 
-    if (profileError) {
-      console.error(
-        "Erro ao carregar perfil:",
-        profileError
-      );
+    if (profile) {
+      setSex(profile.sex || "");
+      setHeight(profile.height_cm ? String(profile.height_cm) : "");
     }
 
-    setName(
-      profile?.name ||
-        user.user_metadata?.name ||
-        ""
-    );
+    const { data: weights } = await supabase
+      .from("weight_entries")
+      .select("weight,recorded_at")
+      .eq("user_id", user.id)
+      .order("recorded_at", { ascending: false });
 
-    setSex(
-      profile?.sex || ""
-    );
-
-    setHeight(
-      profile?.height_cm
-        ? String(
-            profile.height_cm
-          )
-        : ""
-    );
+    if (weights?.length) {
+      setCurrentWeight(Number(weights[0].weight));
+      setWeightRecords(weights.length);
+    }
 
     setLoading(false);
   }
 
-  async function saveProfile(
-    e: FormEvent
-  ) {
-    e.preventDefault();
-
-    setMessage("");
-    setErrorMessage("");
-
-    if (!userId) {
-      setErrorMessage(
-        "Usuário não identificado."
-      );
-      return;
-    }
-
-    if (
-      sex !== "male" &&
-      sex !== "female"
-    ) {
-      setErrorMessage(
-        "Selecione o sexo."
-      );
-      return;
-    }
-
-    const heightNumber =
-      Number(height);
-
-    if (
-      !Number.isFinite(
-        heightNumber
-      ) ||
-      heightNumber < 100 ||
-      heightNumber > 250
-    ) {
-      setErrorMessage(
-        "Digite uma altura válida em centímetros."
-      );
-      return;
-    }
+  async function saveProfile() {
+    if (!userId) return;
 
     setSaving(true);
+    setSaved(false);
 
-    const {
-      error,
-    } = await supabase
+    const heightNumber = height ? Number(height) : null;
+
+    const { error } = await supabase
       .from("profiles")
       .upsert(
         {
           id: userId,
-
-          name:
-            name.trim() ||
-            null,
-
-          sex,
-
-          height_cm:
-            Math.round(
-              heightNumber
-            ),
-
-          updated_at:
-            new Date()
-              .toISOString(),
+          sex: sex || null,
+          height_cm: heightNumber,
         },
         {
           onConflict: "id",
@@ -177,163 +111,267 @@ export default function PerfilPage() {
 
     setSaving(false);
 
-    if (error) {
-      console.error(
-        "Erro ao salvar perfil:",
-        error
-      );
+    if (!error) {
+      setSaved(true);
 
-      setErrorMessage(
-        `Não foi possível salvar: ${error.message}`
-      );
-
-      return;
+      setTimeout(() => {
+        setSaved(false);
+      }, 2500);
+    } else {
+      console.error("Erro ao salvar perfil:", error);
     }
+  }
 
-    setMessage(
-      "Perfil atualizado com sucesso."
+  const initials = useMemo(() => {
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((item) => item[0]?.toUpperCase())
+      .join("");
+  }, [name]);
+
+  function formatDate(value: string | null) {
+    if (!value) return "—";
+
+    return new Intl.DateTimeFormat("pt-BR", {
+      month: "long",
+      year: "numeric",
+    }).format(new Date(value));
+  }
+
+  if (loading) {
+    return (
+      <div className="profile-loading">
+        Carregando perfil...
+      </div>
     );
   }
 
   return (
-    <AuthGuard>
-      <AppShell>
-        <div className="page">
-          <header className="page-header">
-            <div>
-              <span className="eyebrow">
-                MEU PERFIL
-              </span>
+    <div className="profile-page">
+      <div className="profile-page-header">
+        <div>
+          <span className="page-eyebrow">Minha conta</span>
+          <h1>Perfil</h1>
+          <p>
+            Gerencie seus dados e mantenha suas informações atualizadas.
+          </p>
+        </div>
 
-              <h1>
-                Seus dados
-              </h1>
+        <div className="profile-header-icon">
+          <UserRound size={26} />
+        </div>
+      </div>
+
+      <section className="profile-hero-card">
+        <div className="profile-avatar">
+          {initials || "L"}
+        </div>
+
+        <div className="profile-hero-info">
+          <span>Conta Levia</span>
+          <h2>{name}</h2>
+
+          <div className="profile-email">
+            <Mail size={15} />
+            {email}
+          </div>
+        </div>
+
+        <div className="profile-member">
+          <CalendarDays size={17} />
+
+          <div>
+            <span>Membro desde</span>
+            <strong>{formatDate(createdAt)}</strong>
+          </div>
+        </div>
+      </section>
+
+      <div className="profile-stats">
+        <div className="profile-stat-card">
+          <div className="profile-stat-icon">
+            <Scale size={20} />
+          </div>
+
+          <div>
+            <span>Peso atual</span>
+
+            <strong>
+              {currentWeight !== null
+                ? `${currentWeight.toFixed(1)} kg`
+                : "—"}
+            </strong>
+
+            <small>
+              {currentWeight !== null
+                ? "último peso registrado"
+                : "nenhum peso registrado"}
+            </small>
+          </div>
+        </div>
+
+        <div className="profile-stat-card">
+          <div className="profile-stat-icon">
+            <Ruler size={20} />
+          </div>
+
+          <div>
+            <span>Altura</span>
+
+            <strong>
+              {height ? `${height} cm` : "—"}
+            </strong>
+
+            <small>
+              informação do perfil
+            </small>
+          </div>
+        </div>
+
+        <div className="profile-stat-card">
+          <div className="profile-stat-icon">
+            <CheckCircle2 size={20} />
+          </div>
+
+          <div>
+            <span>Registros de peso</span>
+
+            <strong>{weightRecords}</strong>
+
+            <small>
+              registros no histórico
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div className="profile-content-grid">
+        <section className="profile-section-card">
+          <div className="profile-section-heading">
+            <div>
+              <h3>Dados pessoais</h3>
 
               <p>
-                Essas informações ajudam o Levia
-                a personalizar melhor seu
-                acompanhamento.
+                Essas informações ajudam a Lívia a entender melhor seu acompanhamento.
               </p>
             </div>
-          </header>
+          </div>
 
-          {loading ? (
-            <div className="card">
-              Carregando perfil...
-            </div>
-          ) : (
-            <form
-              className="card form-card"
-              onSubmit={
-                saveProfile
-              }
-              style={{
-                maxWidth: "620px",
-              }}
-            >
-              {message && (
-                <div className="success-message">
-                  {message}
-                </div>
-              )}
+          <div className="profile-form-grid">
+            <div className="profile-field">
+              <label>E-mail</label>
 
-              {errorMessage && (
-                <div
-                  style={{
-                    padding:
-                      "12px 14px",
-                    borderRadius:
-                      "13px",
-                    background:
-                      "#fbecec",
-                    color:
-                      "#8b3030",
-                    border:
-                      "1px solid #efcaca",
-                    fontSize:
-                      "13px",
-                  }}
-                >
-                  {errorMessage}
-                </div>
-              )}
-
-              <label>
-                Nome
-
+              <div className="profile-input disabled">
+                <Mail size={17} />
                 <input
-                  type="text"
-                  value={name}
-                  onChange={(e) =>
-                    setName(
-                      e.target
-                        .value
-                    )
-                  }
-                  placeholder="Seu nome"
+                  type="email"
+                  value={email}
+                  disabled
                 />
-              </label>
+              </div>
 
-              <label>
-                Sexo
+              <small>
+                O e-mail da conta não pode ser alterado aqui.
+              </small>
+            </div>
 
-                <select
-                  value={sex}
-                  onChange={(e) =>
-                    setSex(
-                      e.target
-                        .value
-                    )
-                  }
-                  required
-                >
-                  <option value="">
-                    Selecione
-                  </option>
+            <div className="profile-field">
+              <label>Sexo</label>
 
-                  <option value="female">
-                    Feminino
-                  </option>
+              <select
+                value={sex}
+                onChange={(event) =>
+                  setSex(event.target.value)
+                }
+              >
+                <option value="">
+                  Selecione
+                </option>
 
-                  <option value="male">
-                    Masculino
-                  </option>
-                </select>
-              </label>
+                <option value="female">
+                  Feminino
+                </option>
 
-              <label>
-                Altura (cm)
+                <option value="male">
+                  Masculino
+                </option>
+              </select>
+            </div>
+
+            <div className="profile-field">
+              <label>Altura</label>
+
+              <div className="profile-input">
+                <Ruler size={17} />
 
                 <input
                   type="number"
-                  inputMode="numeric"
                   min="100"
                   max="250"
                   value={height}
-                  onChange={(e) =>
-                    setHeight(
-                      e.target
-                        .value
-                    )
+                  onChange={(event) =>
+                    setHeight(event.target.value)
                   }
-                  placeholder="Ex.: 175"
-                  required
+                  placeholder="Ex.: 170"
                 />
-              </label>
 
-              <button
-                className="primary-button"
-                type="submit"
-                disabled={saving}
-              >
-                {saving
-                  ? "Salvando..."
-                  : "Salvar perfil"}
-              </button>
-            </form>
-          )}
-        </div>
-      </AppShell>
-    </AuthGuard>
+                <span>cm</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="profile-save-area">
+            {saved && (
+              <div className="profile-success">
+                <CheckCircle2 size={17} />
+                Informações salvas
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="profile-save-button"
+              onClick={saveProfile}
+              disabled={saving}
+            >
+              <Save size={17} />
+
+              {saving
+                ? "Salvando..."
+                : "Salvar alterações"}
+            </button>
+          </div>
+        </section>
+
+        <aside className="profile-security-card">
+          <div className="profile-security-icon">
+            <ShieldCheck size={23} />
+          </div>
+
+          <h3>Seus dados</h3>
+
+          <p>
+            Suas informações de acompanhamento ficam vinculadas à sua conta.
+          </p>
+
+          <div className="profile-security-line">
+            <CheckCircle2 size={16} />
+            Dados pessoais protegidos
+          </div>
+
+          <div className="profile-security-line">
+            <CheckCircle2 size={16} />
+            Histórico individual
+          </div>
+
+          <div className="profile-security-line">
+            <CheckCircle2 size={16} />
+            Registros associados ao seu usuário
+          </div>
+        </aside>
+      </div>
+    </div>
   );
 }

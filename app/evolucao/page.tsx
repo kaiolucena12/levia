@@ -1,8 +1,6 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import AuthGuard from "@/components/AuthGuard";
-import AppShell from "@/components/AppShell";
 import { supabase } from "@/lib/supabase";
 import type { WeightEntry } from "@/lib/types";
 import {
@@ -115,9 +113,7 @@ export default function EvolucaoPage() {
     if (error) {
       console.error("Erro ao salvar peso:", error);
 
-      setErrorMessage(
-        `Não foi possível salvar o peso: ${error.message}`
-      );
+      setErrorMessage(`Não foi possível salvar o peso: ${error.message}`);
 
       return;
     }
@@ -170,160 +166,156 @@ export default function EvolucaoPage() {
   }, [entries]);
 
   return (
-    <AuthGuard>
-      <AppShell>
-        <div className="page">
-          <header className="page-header">
+    <div className="page">
+      <header className="page-header">
+        <div>
+          <span className="eyebrow">PROGRESSO</span>
+          <h1>Sua evolução</h1>
+          <p>
+            Acompanhe a tendência. Um número isolado não conta toda a
+            história.
+          </p>
+        </div>
+      </header>
+
+      {message && (
+        <div className="success-message">
+          {message}
+        </div>
+      )}
+
+      {errorMessage && (
+        <div
+          style={{
+            marginBottom: "18px",
+            padding: "12px 14px",
+            borderRadius: "13px",
+            background: "#fbecec",
+            border: "1px solid #efcaca",
+            color: "#8b3030",
+            fontSize: "13px",
+          }}
+        >
+          {errorMessage}
+        </div>
+      )}
+
+      <section className="stats-grid compact">
+        <div className="stat-card featured">
+          <span className="stat-label">Peso atual</span>
+          <strong>{current ? `${current} kg` : "—"}</strong>
+          <small>último registro</small>
+        </div>
+
+        <div className="stat-card">
+          <span className="stat-label">Desde o início</span>
+          <strong>
+            {change === null
+              ? "—"
+              : `${change > 0 ? "+" : ""}${change} kg`}
+          </strong>
+          <small>variação total</small>
+        </div>
+
+        <div className="stat-card">
+          <span className="stat-label">Comparação semanal</span>
+          <strong>
+            {weeklyChange === null
+              ? "—"
+              : `${weeklyChange > 0 ? "+" : ""}${weeklyChange} kg`}
+          </strong>
+          <small>aprox. últimos 7 dias</small>
+        </div>
+      </section>
+
+      <section className="two-column evolution-layout">
+        <div className="card chart-card">
+          <div className="card-heading">
             <div>
-              <span className="eyebrow">PROGRESSO</span>
-              <h1>Sua evolução</h1>
+              <span className="eyebrow">GRÁFICO</span>
+              <h2>Histórico de peso</h2>
+            </div>
+          </div>
+
+          {entries.length < 2 ? (
+            <div className="empty-state">
               <p>
-                Acompanhe a tendência. Um número isolado não conta toda a
-                história.
+                Registre pelo menos dois pesos para ver o gráfico.
               </p>
             </div>
-          </header>
-
-          {message && (
-            <div className="success-message">
-              {message}
+          ) : (
+            <div className="chart-wrap">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                  />
+                  <XAxis dataKey="data" />
+                  <YAxis
+                    domain={["dataMin - 2", "dataMax + 2"]}
+                  />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="peso"
+                    stroke="currentColor"
+                    strokeWidth={3}
+                    dot={{ r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           )}
-
-          {errorMessage && (
-            <div
-              style={{
-                marginBottom: "18px",
-                padding: "12px 14px",
-                borderRadius: "13px",
-                background: "#fbecec",
-                border: "1px solid #efcaca",
-                color: "#8b3030",
-                fontSize: "13px",
-              }}
-            >
-              {errorMessage}
-            </div>
-          )}
-
-          <section className="stats-grid compact">
-            <div className="stat-card featured">
-              <span className="stat-label">Peso atual</span>
-              <strong>{current ? `${current} kg` : "—"}</strong>
-              <small>último registro</small>
-            </div>
-
-            <div className="stat-card">
-              <span className="stat-label">Desde o início</span>
-              <strong>
-                {change === null
-                  ? "—"
-                  : `${change > 0 ? "+" : ""}${change} kg`}
-              </strong>
-              <small>variação total</small>
-            </div>
-
-            <div className="stat-card">
-              <span className="stat-label">Comparação semanal</span>
-              <strong>
-                {weeklyChange === null
-                  ? "—"
-                  : `${weeklyChange > 0 ? "+" : ""}${weeklyChange} kg`}
-              </strong>
-              <small>aprox. últimos 7 dias</small>
-            </div>
-          </section>
-
-          <section className="two-column evolution-layout">
-            <div className="card chart-card">
-              <div className="card-heading">
-                <div>
-                  <span className="eyebrow">GRÁFICO</span>
-                  <h2>Histórico de peso</h2>
-                </div>
-              </div>
-
-              {entries.length < 2 ? (
-                <div className="empty-state">
-                  <p>
-                    Registre pelo menos dois pesos para ver o gráfico.
-                  </p>
-                </div>
-              ) : (
-                <div className="chart-wrap">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData}>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        vertical={false}
-                      />
-                      <XAxis dataKey="data" />
-                      <YAxis
-                        domain={["dataMin - 2", "dataMax + 2"]}
-                      />
-                      <Tooltip />
-                      <Line
-                        type="monotone"
-                        dataKey="peso"
-                        stroke="currentColor"
-                        strokeWidth={3}
-                        dot={{ r: 4 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-            </div>
-
-            <form
-              className="card form-card"
-              onSubmit={submit}
-            >
-              <span className="eyebrow">
-                NOVO REGISTRO
-              </span>
-
-              <h2>Registrar peso</h2>
-
-              <label>
-                Peso (kg)
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={weight}
-                  onChange={(e) =>
-                    setWeight(e.target.value)
-                  }
-                  placeholder="Ex.: 92,4"
-                  required
-                />
-              </label>
-
-              <label>
-                Data
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) =>
-                    setDate(e.target.value)
-                  }
-                  required
-                />
-              </label>
-
-              <button
-                className="primary-button"
-                type="submit"
-                disabled={saving}
-              >
-                {saving
-                  ? "Salvando..."
-                  : "Salvar peso"}
-              </button>
-            </form>
-          </section>
         </div>
-      </AppShell>
-    </AuthGuard>
+
+        <form
+          className="card form-card"
+          onSubmit={submit}
+        >
+          <span className="eyebrow">
+            NOVO REGISTRO
+          </span>
+
+          <h2>Registrar peso</h2>
+
+          <label>
+            Peso (kg)
+            <input
+              type="text"
+              inputMode="decimal"
+              value={weight}
+              onChange={(e) =>
+                setWeight(e.target.value)
+              }
+              placeholder="Ex.: 92,4"
+              required
+            />
+          </label>
+
+          <label>
+            Data
+            <input
+              type="date"
+              value={date}
+              onChange={(e) =>
+                setDate(e.target.value)
+              }
+              required
+            />
+          </label>
+
+          <button
+            className="primary-button"
+            type="submit"
+            disabled={saving}
+          >
+            {saving
+              ? "Salvando..."
+              : "Salvar peso"}
+          </button>
+        </form>
+      </section>
+    </div>
   );
 }

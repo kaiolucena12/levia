@@ -7,8 +7,6 @@ import {
   useState,
 } from "react";
 
-import AuthGuard from "@/components/AuthGuard";
-import AppShell from "@/components/AppShell";
 import { supabase } from "@/lib/supabase";
 
 import type {
@@ -696,9 +694,7 @@ export default function DiarioPage() {
   }
 
   return (
-    <AuthGuard>
-      <AppShell>
-        <div className="page">
+    <div className="page">
           <header className="page-header">
             <div>
               <span className="eyebrow">
@@ -1207,8 +1203,6 @@ export default function DiarioPage() {
               </section>
             </>
           )}
-        </div>
-      </AppShell>
-    </AuthGuard>
+    </div>
   );
 }

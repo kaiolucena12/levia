@@ -4,14 +4,15 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import LiviaAssistant from "@/components/LiviaAssistant";
+
 import {
   Home,
   Utensils,
   TrendingDown,
-  Sparkles,
   LogOut,
   UserRound,
   HeartPulse,
+  Dumbbell,
 } from "lucide-react";
 
 const links = [
@@ -31,9 +32,9 @@ const links = [
     icon: TrendingDown,
   },
   {
-    href: "/ia",
-    label: "Lívia",
-    icon: Sparkles,
+    href: "/treino",
+    label: "Treino",
+    icon: Dumbbell,
   },
   {
     href: "/perfil",
@@ -42,7 +43,11 @@ const links = [
   },
 ];
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+export default function AppShell({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -58,6 +63,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <div className="brand-mark">
             <HeartPulse size={20} />
           </div>
+
           <div>
             <strong>Levia</strong>
             <span>evolução com leveza</span>
@@ -69,7 +75,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <Link
               key={href}
               href={href}
-              className={pathname === href ? "nav-link active" : "nav-link"}
+              className={
+                pathname === href
+                  ? "nav-link active"
+                  : "nav-link"
+              }
             >
               <Icon size={19} />
               {label}
@@ -77,13 +87,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        <button className="nav-link logout-button" onClick={logout}>
+        <button
+          className="nav-link logout-button"
+          onClick={logout}
+        >
           <LogOut size={19} />
           Sair
         </button>
       </aside>
 
-      <main className="main-content">{children}</main>
+      <main className="main-content">
+        {children}
+      </main>
 
       <LiviaAssistant />
 
@@ -92,7 +107,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Link
             key={href}
             href={href}
-            className={pathname === href ? "mobile-nav-link active" : "mobile-nav-link"}
+            className={
+              pathname === href
+                ? "mobile-nav-link active"
+                : "mobile-nav-link"
+            }
           >
             <Icon size={20} />
             <span>{label}</span>

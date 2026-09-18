@@ -9,8 +9,6 @@ import {
 
 import Link from "next/link";
 
-import AuthGuard from "@/components/AuthGuard";
-import AppShell from "@/components/AppShell";
 
 import { supabase } from "@/lib/supabase";
 
@@ -1075,9 +1073,7 @@ export default function DashboardPage() {
   ======================================================= */
 
   return (
-    <AuthGuard>
-      <AppShell>
-        <div className="page">
+    <div className="page">
           {/* CABEÇALHO */}
 
           <header className="page-header">
@@ -1544,8 +1540,6 @@ export default function DashboardPage() {
               </section>
             </>
           )}
-        </div>
-      </AppShell>
-    </AuthGuard>
+    </div>
   );
 }
