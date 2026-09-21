@@ -3514,3 +3514,56 @@ select:focus {
   }
 }
 
+/* =========================================================
+   TREINO - DEMONSTRAÇÃO EM GIF
+========================================================= */
+
+.exercise-modal-gif {
+  width: 100%;
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #f5f7f3;
+  border-bottom: 1px solid var(--border);
+}
+
+.exercise-modal-gif img {
+  display: block;
+  width: 100%;
+  max-height: 430px;
+  object-fit: contain;
+  background: #f5f7f3;
+}
+
+.exercise-modal-gif-empty {
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.workout-picker-image img,
+.workout-draft-image img,
+.workout-plan-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+@media (max-width: 640px) {
+  .exercise-modal-gif {
+    min-height: 240px;
+  }
+
+  .exercise-modal-gif img {
+    max-height: 320px;
+  }
+
+  .exercise-modal-gif-empty {
+    min-height: 240px;
+  }
+}

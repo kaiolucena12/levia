@@ -23,8 +23,9 @@ type Exercise = {
   primary_muscles: string[];
   secondary_muscles: string[];
   instructions: string[];
-  image_start: string | null;
-  image_end: string | null;
+  gif_url: string | null;
+  source: string | null;
+  external_id: string | null;
 };
 
 type WorkoutItem = {
@@ -102,8 +103,9 @@ export default function TreinoPage() {
         primary_muscles,
         secondary_muscles,
         instructions,
-        image_start,
-        image_end
+        gif_url,
+        source,
+        external_id
       `)
       .order("name_pt", {
         ascending: true,
@@ -190,8 +192,9 @@ export default function TreinoPage() {
           primary_muscles,
           secondary_muscles,
           instructions,
-          image_start,
-          image_end
+          gif_url,
+          source,
+          external_id
         `)
         .in("id", exerciseIds);
 
@@ -616,9 +619,9 @@ export default function TreinoPage() {
                     disabled={selected}
                   >
                     <div className="workout-picker-image">
-                      {exercise.image_start ? (
+                      {exercise.gif_url ? (
                         <img
-                          src={exercise.image_start}
+                          src={exercise.gif_url}
                           alt={name}
                         />
                       ) : (
@@ -669,9 +672,9 @@ export default function TreinoPage() {
                         </div>
 
                         <div className="workout-draft-image">
-                          {item.exercise.image_start ? (
+                          {item.exercise.gif_url ? (
                             <img
-                              src={item.exercise.image_start}
+                              src={item.exercise.gif_url}
                               alt={name}
                             />
                           ) : (
@@ -919,9 +922,9 @@ function WorkoutPlanCard({
               </div>
 
               <div className="workout-plan-thumb">
-                {exercise?.image_start ? (
+                {exercise?.gif_url ? (
                   <img
-                    src={exercise.image_start}
+                    src={exercise.gif_url}
                     alt={displayName}
                   />
                 ) : (
@@ -1006,24 +1009,17 @@ function ExerciseModal({
           <X size={20} />
         </button>
 
-        <div className="exercise-modal-images">
-          {exercise.image_start && (
-            <div>
-              <img
-                src={exercise.image_start}
-                alt={`${displayName} posição inicial`}
-              />
-              <span>Posição inicial</span>
-            </div>
-          )}
-
-          {exercise.image_end && (
-            <div>
-              <img
-                src={exercise.image_end}
-                alt={`${displayName} posição final`}
-              />
-              <span>Posição final</span>
+        <div className="exercise-modal-gif">
+          {exercise.gif_url ? (
+            <img
+              src={exercise.gif_url}
+              alt={`Demonstração de ${displayName}`}
+              loading="eager"
+            />
+          ) : (
+            <div className="exercise-modal-gif-empty">
+              <Dumbbell size={34} />
+              <span>Demonstração ainda não disponível.</span>
             </div>
           )}
         </div>
