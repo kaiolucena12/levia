@@ -51,6 +51,18 @@ export default function AppShell({
   const pathname = usePathname();
   const router = useRouter();
 
+  /*
+   * LOGIN É PÁGINA PÚBLICA.
+   *
+   * Não mostra:
+   * - sidebar
+   * - menu mobile
+   * - Lívia
+   */
+  if (pathname === "/login") {
+    return <>{children}</>;
+  }
+
   async function logout() {
     await supabase.auth.signOut();
     router.replace("/login");
@@ -71,20 +83,26 @@ export default function AppShell({
         </div>
 
         <nav>
-          {links.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={
-                pathname === href
-                  ? "nav-link active"
-                  : "nav-link"
-              }
-            >
-              <Icon size={19} />
-              {label}
-            </Link>
-          ))}
+          {links.map(
+            ({
+              href,
+              label,
+              icon: Icon,
+            }) => (
+              <Link
+                key={href}
+                href={href}
+                className={
+                  pathname === href
+                    ? "nav-link active"
+                    : "nav-link"
+                }
+              >
+                <Icon size={19} />
+                {label}
+              </Link>
+            )
+          )}
         </nav>
 
         <button
@@ -103,20 +121,26 @@ export default function AppShell({
       <LiviaAssistant />
 
       <nav className="mobile-nav">
-        {links.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={
-              pathname === href
-                ? "mobile-nav-link active"
-                : "mobile-nav-link"
-            }
-          >
-            <Icon size={20} />
-            <span>{label}</span>
-          </Link>
-        ))}
+        {links.map(
+          ({
+            href,
+            label,
+            icon: Icon,
+          }) => (
+            <Link
+              key={href}
+              href={href}
+              className={
+                pathname === href
+                  ? "mobile-nav-link active"
+                  : "mobile-nav-link"
+              }
+            >
+              <Icon size={20} />
+              <span>{label}</span>
+            </Link>
+          )
+        )}
       </nav>
     </div>
   );
