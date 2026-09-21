@@ -2286,8 +2286,9 @@ select:focus {
 
 .profile-page {
   width: 100%;
-  max-width: 1180px;
+  max-width: 1300px;
   margin: 0 auto;
+  padding: 48px 44px 80px;
 }
 
 .profile-page-header {
@@ -2735,9 +2736,9 @@ select:focus {
 
 .workout-manager-page {
   width: 100%;
-  max-width: 1180px;
+  max-width: 1300px;
   margin: 0 auto;
-  padding-bottom: 50px;
+  padding: 48px 44px 80px;
 }
 
 .workout-manager-header {
@@ -2852,7 +2853,7 @@ select:focus {
   overflow: hidden;
 
   border: 1px solid #e4e8e1;
-  border-radius: 22px;
+  border-radius: 18px;
 
   background: #fff;
 }
@@ -3494,3 +3495,22 @@ select:focus {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* =========================================================
+   AJUSTE DE LARGURA - PERFIL E TREINO
+========================================================= */
+
+@media (max-width: 980px) {
+  .profile-page,
+  .workout-manager-page {
+    padding: 32px 22px 100px;
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-page,
+  .workout-manager-page {
+    padding: 28px 18px 120px;
+  }
+}
+
